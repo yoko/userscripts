@@ -1,9 +1,10 @@
 // ==UserScript==
-// @name        Skip Redirector
-// @namespace   http://codefairy.org/ns/userscripts
-// @include     *
-// @version     0.4.1
-// @license     MIT License
+// @name          Skip Redirector
+// @namespace     http://codefairy.org/ns/userscripts
+// @include       *
+// @version       0.4.1
+// @license       MIT License
+// @work          Firefox 3.5 + Greasemonkey 0.8.2, Safari 4 + Greasekit 1.7
 // ==/UserScript==
 
 new function() {
