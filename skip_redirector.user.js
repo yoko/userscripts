@@ -1,10 +1,9 @@
 // ==UserScript==
-// @name          Skip Redirector
-// @namespace     http://codefairy.org/ns/userscripts
-// @include       *
-// @version       0.4
-// @license       MIT License
-// @work          Firefox 3.5 + Greasemonkey 0.8.2, Safari 4 + Greasekit 1.7
+// @name        Skip Redirector
+// @namespace   http://codefairy.org/ns/userscripts
+// @include     *
+// @version     0.4.1
+// @license     MIT License
 // ==/UserScript==
 
 new function() {
@@ -21,9 +20,14 @@ new function() {
 			if (new RegExp(item.url).test(location.href)) {
 				var a = $X(item.link)[0];
 				if (a) {
-					var e = document.createEvent('MouseEvents');
-					e.initEvent('click', false, true);
-					a.dispatchEvent(e);
+					// can not dispatch event with Firefox that target is A element..
+					if (a.href)
+						location.href = a.href;
+					else {
+						var e = document.createEvent('MouseEvent');
+						e.initEvent('click', false, true);
+						a.dispatchEvent(e);
+					}
 				}
 				return;
 			}
@@ -55,7 +59,7 @@ new function() {
 		var stash = load();
 
 		if (stash && stash.expires >= now)
-			callback(stash.data);
+			handler(stash.data);
 		else {
 			GM_xmlhttpRequest({
 				method: 'GET',
