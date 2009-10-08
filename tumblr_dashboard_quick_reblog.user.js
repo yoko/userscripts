@@ -2,7 +2,7 @@
 // @name           Tumblr Dashboard Quick Reblog
 // @namespace      http://codefairy.org/ns/userscripts
 // @include        http://www.tumblr.com/*
-// @version        0.1
+// @version        0.1.1
 // @license        MIT License
 // @work           Safari 4 + Greasekit 1.7
 // ==/UserScript==
@@ -39,7 +39,7 @@ new function() {
 					urls = stdin.map(function(node) { return node.href; });
 
 				urls = urls.filter(function(url) {
-					return /^https?:\/\/www\.tumblr\.com\/post\/\d+/.test(url);
+					return /^https?:\/\/[^.]+\.tumblr\.com\/post\/\d+/.test(url);
 				});
 				urls.map(reblog);
 
@@ -62,14 +62,8 @@ new function() {
 		link.parentNode.insertBefore(a, link.nextSibling);
 	}
 
-	function get_reblog_url(id) {
-		$X('id("post'+id+'")');
-		return ;
-	}
-
 	function reblog(url) {
-		var id = (/\/(?:reblog|post)\/(\d+)\//.exec(url)|| [])[1];
-		if (!id) return;
+		var id = /\/(?:reblog|post)\/(\d+)\//.exec(url)[1];
 		var a = $X('id("post'+id+'")/div[@class="post_controls"]/a[text()="reblog"]')[0];
 		if (!a) return;
 		url = a.href;
