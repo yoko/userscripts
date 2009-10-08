@@ -21,7 +21,7 @@ new function() {
 			if (new RegExp(item.url).test(location.href)) {
 				var a = $X(item.link)[0];
 				if (a) {
-					// can not dispatch event with Firefox that target is A element..
+					// [firefox] can not dispatch event that target is link.
 					if (a.href)
 						location.href = a.href;
 					else {
