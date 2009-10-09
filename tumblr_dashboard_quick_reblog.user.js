@@ -1,10 +1,10 @@
 // ==UserScript==
-// @name           Tumblr Dashboard Quick Reblog
-// @namespace      http://codefairy.org/ns/userscripts
-// @include        http://www.tumblr.com/*
-// @version        0.1.1
-// @license        MIT License
-// @work           Safari 4 + Greasekit 1.7
+// @name          Tumblr Dashboard Quick Reblog
+// @namespace     http://codefairy.org/ns/userscripts
+// @include       http://www.tumblr.com/*
+// @version       0.1.1
+// @license       MIT License
+// @work          Safari 4 + Greasekit 1.7
 // ==/UserScript==
 
 new function() {
