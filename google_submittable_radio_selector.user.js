@@ -2,16 +2,17 @@
 // @name           Google Submittable Radio Selector
 // @namespace      http://codefairy.org/ns/userscripts
 // @include        http://www.google.*/search?*
-// @version        0.1
+// @version        0.1.1
 // @license        MIT License
 // @work           Greasemonkey
 // @work           GreaseKit
 // ==/UserScript==
 
 new function() {
+	var form = $X('id("tsf")')[0];
 	$X('//input[@id="all" or @id="il"]').forEach(function(radio) {
 		radio.addEventListener('click', function() {
-			$X('id("tsf")')[0].submit();
+			form.submit();
 		}, false);
 	});
 
