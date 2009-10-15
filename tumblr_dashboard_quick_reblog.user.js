@@ -4,7 +4,7 @@
 // @include       http://www.tumblr.com/*
 // @version       0.1.1
 // @license       MIT License
-// @work          Safari 4 + Greasekit 1.7
+// @work          GreaseKit
 // ==/UserScript==
 
 new function() {

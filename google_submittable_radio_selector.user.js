@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name           Google Submittable Radio Selector
-// @namespace      http://codefairy.org/ns/userscripts
-// @include        http://www.google.*/search?*
-// @version        0.1.1
-// @license        MIT License
-// @work           Greasemonkey
-// @work           GreaseKit
+// @name          Google Submittable Radio Selector
+// @namespace     http://codefairy.org/ns/userscripts
+// @include       http://www.google.*/search?*
+// @version       0.1.1
+// @license       MIT License
+// @work          Greasemonkey
+// @work          GreaseKit
 // ==/UserScript==
 
 new function() {

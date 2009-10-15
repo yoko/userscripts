@@ -4,8 +4,8 @@
 // @include       *
 // @version       0.4.1
 // @license       MIT License
-// @work          Firefox 3.5 + Greasemonkey 0.8.2
-// @work          Safari 4 + Greasekit 1.7
+// @work          Greasemonkey
+// @work          GreaseKit
 // ==/UserScript==
 
 new function() {

@@ -4,7 +4,8 @@
 // @include       https://direct*.shinseibank.co.jp/*
 // @version       0.3
 // @license       MIT License
-// @work          Firefox 3.5 + Greasemonkey 0.8.2, Safari 4 + Greasekit 1.7
+// @work          Greasemonkey
+// @work          GreaseKit
 // @inspired      http://blog.japan.cnet.com/kenn/archives/004415.html
 // ==/UserScript==
 
