@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       0.4.1
+// @version       0.5
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -20,17 +20,21 @@ new function() {
 		while (i--) {
 			var item = data[i].data;
 			if (new RegExp(item.url).test(location.href)) {
-				var a = $X(item.link)[0];
-				if (a) {
-					// [firefox] can not dispatch event that target is link.
-					if (a.href)
-						location.href = a.href;
-					else {
-						var e = document.createEvent('MouseEvent');
-						e.initEvent('click', false, true);
-						a.dispatchEvent(e);
+				if (link) {
+					var a = $X(link)[0];
+					if (a) {
+						// [firefox] can not dispatch event that target is link.
+						if (a.href)
+							location.href = a.href;
+						else {
+							var e = document.createEvent('MouseEvent');
+							e.initEvent('click', false, true);
+							a.dispatchEvent(e);
+						}
 					}
 				}
+				else if (replace_url)
+					location.href = location.href.replace(new RegExp(url), replace_url);
 				return;
 			}
 		}
