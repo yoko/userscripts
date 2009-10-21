@@ -19,7 +19,10 @@ new function() {
 		var i = data.length;
 		while (i--) {
 			var item = data[i].data;
-			if (new RegExp(item.url).test(location.href)) {
+			var url = item.url;
+			var link = item.link;
+			var replace_url = item.replace_url;
+			if (new RegExp(url).test(location.href)) {
 				if (link) {
 					var a = $X(link)[0];
 					if (a) {
