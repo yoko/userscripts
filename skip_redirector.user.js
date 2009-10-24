@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       0.5
+// @version       0.5.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -23,7 +23,12 @@ new function() {
 			var link = item.link;
 			var replace_url = item.replace_url;
 			if (new RegExp(url).test(location.href)) {
-				if (link) {
+				if (replace_url) {
+					var reditrect_url = location.href.replace(new RegExp(url), replace_url);
+					if (/^https?:\/\//.test(reditrect_url))
+						location.href = reditrect_url;
+				}
+				else if (link) {
 					var a = $X(link)[0];
 					if (a) {
 						// [firefox] can not dispatch event that target is link.
@@ -36,8 +41,6 @@ new function() {
 						}
 					}
 				}
-				else if (replace_url)
-					location.href = location.href.replace(new RegExp(url), replace_url);
 				return;
 			}
 		}
@@ -97,7 +100,7 @@ new function() {
 	}
 
 
-	// @source http://gist.github.com/29681.txt
+	// http://gist.github.com/29681
 	function $X (exp, context, resolver, result_type) {
 		context || (context = document);
 		var Doc = context.ownerDocument || context;
