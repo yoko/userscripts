@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       0.5.1
+// @version       0.5.2
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -24,7 +24,7 @@ new function() {
 			var replace_url = item.replace_url;
 			if (new RegExp(url).test(location.href)) {
 				if (replace_url) {
-					var reditrect_url = location.href.replace(new RegExp(url), replace_url);
+					var reditrect_url = decodeURIComponent(location.href.replace(new RegExp(url), replace_url));
 					if (/^https?:\/\//.test(reditrect_url))
 						location.href = reditrect_url;
 				}
