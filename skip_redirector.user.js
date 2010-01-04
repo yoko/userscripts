@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       0.5.2
+// @version       0.5.3
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -100,15 +100,25 @@ new function() {
 	}
 
 
-	// http://gist.github.com/29681
-	function $X (exp, context, resolver, result_type) {
+	// http://gist.github.com/3242
+	function $X (exp, context) {
 		context || (context = document);
-		var Doc = context.ownerDocument || context;
-		var result = Doc.evaluate(exp, context, resolver, result_type || XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-		if (result_type) return result;
-		for (var i = 0, len = result.snapshotLength, res = new Array(len); i < len; i++) {
-			res[i] = result.snapshotItem(i);
-		}
-		return res;
+		var expr = (context.ownerDocument || context).createExpression(exp, function (prefix) {
+			return document.createNSResolver(context.documentElement || context).lookupNamespaceURI(prefix) ||
+				context.namespaceURI || document.documentElement.namespaceURI || "";
+		});
+
+		var result = expr.evaluate(context, XPathResult.ANY_TYPE, null);
+			switch (result.resultType) {
+				case XPathResult.STRING_TYPE : return result.stringValue;
+				case XPathResult.NUMBER_TYPE : return result.numberValue;
+				case XPathResult.BOOLEAN_TYPE: return result.booleanValue;
+				case XPathResult.UNORDERED_NODE_ITERATOR_TYPE:
+					// not ensure the order.
+					var ret = [], i = null;
+					while (i = result.iterateNext()) ret.push(i);
+					return ret;
+			}
+		return null;
 	}
 };
