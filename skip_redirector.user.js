@@ -2,20 +2,59 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       0.5.3
+// @version       1.0
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
 // ==/UserScript==
 
 new function() {
-	var cacheable = (typeof GM_setValue == 'function' && typeof GM_getValue == 'function');
+	const API = 'http://wedata.net/databases/Redirector/items.json';
+	const EXPIRES = 7;
 
-	var w = (typeof unsafeWindow != 'undefined') ? unsafeWindow : window;
-	var now = new Date().getTime();
-	var uri = 'http://wedata.net/databases/Redirector/items';
+	var greasemonkey = (typeof unsafeWindow != 'undefined');
+	var now = +new Date;
 
-	var handler = function(data) {
+	if (greasemonkey)
+		GM_registerMenuCommand('Skip Redirector Clear SITEINFO Cache', save);
+
+	var timer, complete = false;
+	var stash = load();
+	if (stash && stash.expires >= now)
+		handler(stash.data);
+	else {
+		if (greasemonkey)
+			GM_xmlhttpRequest({
+				method: 'GET',
+				url   : API,
+				onload: function(r) {
+					clearTimeout(timer);
+					var data = JSON.parse(r.responseText);
+					save(data);
+					if (!complete) handler(data);
+				}
+			});
+		else {
+			window['jsonp'+now] = function(data) {
+				clearTimeout(timer);
+				save(JSON.parse(data));
+				if (!complete) handler(data);
+			};
+			var s = document.createElement('script');
+			s.type    = 'text/javascript';
+			s.src     = API+'?callback=jsonp'+now;
+			s.charset = 'utf-8';
+			document.body.appendChild(s);
+		}
+		if (stash)
+			timer = setTimeout(function() {
+				complete = true;
+				handler(save(stash.data));
+			}, 1000 * 30);
+	}
+
+
+	function handler(data) {
 		var i = data.length;
 		while (i--) {
 			var item = data[i].data;
@@ -31,7 +70,7 @@ new function() {
 				else if (link) {
 					var a = $X(link)[0];
 					if (a) {
-						// [firefox] can not dispatch event that target is link.
+						// [fx] can not dispatch event that target is link.
 						if (a.href)
 							location.href = a.href;
 						else {
@@ -44,59 +83,33 @@ new function() {
 				return;
 			}
 		}
-	};
+	}
 
-	var load = function() {
-		return eval(GM_getValue('stash'));
-	};
-
-	var save = function(data) {
-		var stash = data ?
-			uneval({
-				data   : data,
-				expires: now + 1000 * 60 * 60 * 24
-			}) :
-			'';
-		GM_setValue('stash', stash);
-		return data;
-	};
-
-
-	if (cacheable && typeof GM_registerMenuCommand == 'function')
-		GM_registerMenuCommand('Clear Redirector Data Cache', save);
-
-	var api = uri+'.json';
-	if (cacheable) {
-		var complete = false;
-		var stash = load();
-
-		if (stash && stash.expires >= now)
-			handler(stash.data);
-		else {
-			GM_xmlhttpRequest({
-				method: 'GET',
-				url   : api,
-				onload: function(r) {
-					var data = eval(r.responseText);
-					save(data);
-					if (!complete) handler(data);
-				}
-			});
-			if (stash)
-				setTimeout(function() {
-					complete = true;
-					handler(save(stash.data));
-				}, 1000 * 30);
+	function load() {
+		var stash = greasemonkey ? GM_getValue('stash') : localStorage.stash;
+		// compatibility
+		try {
+			return (stash && JSON.parse(stash));
+		}
+		catch (e) {
+			return undefined;
 		}
 	}
-	else {
-		w['jsonp'+now] = handler;
 
-		var s = document.createElement('script');
-		s.type    = 'text/javascript';
-		s.src     = api+'?callback=jsonp'+now;
-		s.charset = 'utf-8';
-		document.body.appendChild(s);
+	function save(data) {
+		var stash = data ?
+			JSON.stringify({
+				data   : data,
+				expires: +new Date + 1000 * 60 * 60 * 24 * EXPIRES
+			}) :
+			'';
+		if (greasemonkey)
+			GM_setValue('stash', stash);
+		else {
+			if (stash) localStorage.stash = stash;
+			else delete localStorage.stash;
+		}
+		return data;
 	}
 
 
