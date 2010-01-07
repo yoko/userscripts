@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       1.0
+// @version       1.0.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -18,7 +18,7 @@ new function() {
 	if (greasemonkey)
 		GM_registerMenuCommand('Skip Redirector Clear SITEINFO Cache', save);
 
-	var timer, jsonp = 'jsonp'+now, complete = false;
+	var timer, complete = false;
 	var stash = load();
 	if (stash && stash.expires >= now)
 		handler(stash.data);
@@ -35,14 +35,14 @@ new function() {
 				}
 			});
 		else {
-			window[jsonp] = function(data) {
+			window.userscript_skip_redirector_jsonp = function(data) {
 				clearTimeout(timer);
-				save(JSON.parse(data));
+				save(data);
 				if (!complete) handler(data);
 			};
 			var s = document.createElement('script');
 			s.type    = 'text/javascript';
-			s.src     = API+'?callback='+jsonp;
+			s.src     = API+'?callback=userscript_skip_redirector_jsonp';
 			s.charset = 'utf-8';
 			document.body.appendChild(s);
 		}
@@ -86,7 +86,7 @@ new function() {
 	}
 
 	function load() {
-		var stash = greasemonkey ? GM_getValue('stash') : localStorage.stash;
+		var stash = greasemonkey ? GM_getValue('stash') : localStorage.userscript_skip_redirector_stash;
 		// compatibility
 		try {
 			return (stash && JSON.parse(stash));
@@ -106,8 +106,8 @@ new function() {
 		if (greasemonkey)
 			GM_setValue('stash', stash);
 		else {
-			if (stash) localStorage.stash = stash;
-			else delete localStorage.stash;
+			if (stash) localStorage.userscript_skip_redirector_stash = stash;
+			else delete localStorage.userscript_skip_redirector_stash;
 		}
 		return data;
 	}
