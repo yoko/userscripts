@@ -18,7 +18,7 @@ new function() {
 	if (greasemonkey)
 		GM_registerMenuCommand('Skip Redirector Clear SITEINFO Cache', save);
 
-	var timer, complete = false;
+	var timer, jsonp = 'jsonp'+now, complete = false;
 	var stash = load();
 	if (stash && stash.expires >= now)
 		handler(stash.data);
@@ -35,14 +35,14 @@ new function() {
 				}
 			});
 		else {
-			window['jsonp'+now] = function(data) {
+			window[jsonp] = function(data) {
 				clearTimeout(timer);
 				save(JSON.parse(data));
 				if (!complete) handler(data);
 			};
 			var s = document.createElement('script');
 			s.type    = 'text/javascript';
-			s.src     = API+'?callback=jsonp'+now;
+			s.src     = API+'?callback='+jsonp;
 			s.charset = 'utf-8';
 			document.body.appendChild(s);
 		}
