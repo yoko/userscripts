@@ -34,7 +34,7 @@ new function() {
 					if (!complete) handler(data);
 				}
 			});
-		else {
+		else if (document.body) {
 			window.userscript_skip_redirector_jsonp = function(data) {
 				clearTimeout(timer);
 				save(data);
@@ -73,6 +73,7 @@ new function() {
 				else if (link) {
 					var a = $X(link)[0];
 					if (a) {
+						console.log(a);
 						// [fx] can not dispatch event that target is link.
 						if (a.href)
 							location.href = a.href;
