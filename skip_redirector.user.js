@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       1.0.1
+// @version       1.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -58,14 +58,17 @@ new function() {
 		var i = data.length;
 		while (i--) {
 			var item = data[i].data;
+			if (item.fixme) continue;
 			var url = item.url;
 			var link = item.link;
 			var replace_url = item.replace_url;
 			if (new RegExp(url).test(location.href)) {
 				if (replace_url) {
 					var reditrect_url = decodeURIComponent(location.href.replace(new RegExp(url), replace_url));
-					if (/^https?:\/\//.test(reditrect_url))
+					if (/^https?:\/\//.test(reditrect_url)) {
 						location.href = reditrect_url;
+						return;
+					}
 				}
 				else if (link) {
 					var a = $X(link)[0];
@@ -78,9 +81,9 @@ new function() {
 							e.initEvent('click', false, true);
 							a.dispatchEvent(e);
 						}
+						return;
 					}
 				}
-				return;
 			}
 		}
 	}
