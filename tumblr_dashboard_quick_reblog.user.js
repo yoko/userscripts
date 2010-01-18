@@ -1,18 +1,24 @@
 // ==UserScript==
 // @name          Tumblr Dashboard Quick Reblog
+// @description   Adds quick reblog link to Tumblr dashboard for Safari + GreaseKit.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.1.1
+// @version       0.2
 // @license       MIT License
-// @work          GreaseKit
+// @work          Greasekit
 // ==/UserScript==
 
 new function() {
-	document.body.addEventListener('AutoPagerize_DOMNodeInserted', function(e) {
-		add(e.target);
+	var posts = $X('id("posts")');
+	if (!posts.length) return;
+
+	document.body.addEventListener('DOMNodeInserted', function(e) {
+		var target = e.target;
+		if (target.tagName && target.tagName.toLowerCase() == 'li' && /^post(\d+)$/.test(target.id))
+			add(target);
 	}, false);
 
-	$X('id("posts")/li').forEach(function(li) {
+	$X('./li', posts[0]).forEach(function(li) {
 		add(li);
 	});
 
@@ -103,7 +109,7 @@ new function() {
 	function get_param (html) {
 		var params = $X(
 			'id("edit_post")//*[name()="input" or name()="textarea" or name()="select"]',
-			HTMLStringToDOM(html)
+			createDocumentFromString(html)
 		);
 		var q = [];
 		params.forEach(function(param) {
@@ -114,19 +120,33 @@ new function() {
 		return q.join('&');
 	}
 
-	// @source http://gist.github.com/164430.txt
-	function HTMLStringToDOM(str){
-		var html = String(str).replace(/<script(?:[ \t\r\n][^>]*)?>[\S\s]*?<\/script[ \t\r\n]*>|<\/?(?:i?frame|html|script|object)(?:[ \t\r\n][^<>]*)?>/gi, ' ');
-		var htmlDoc = document.implementation.createHTMLDocument ?
-			document.implementation.createHTMLDocument('HTMLParser') :
-			document.implementation.createDocument(null, 'html', null);
+	// http://gist.github.com/198443
+	// via http://github.com/hatena/hatena-bookmark-xul/blob/master/chrome/content/common/05-HTMLDocumentCreator.js
+	function createDocumentFromString(source){
+		var doc = document.implementation.createHTMLDocument ?
+				document.implementation.createHTMLDocument('hogehoge') :
+				document.implementation.createDocument(null, 'html', null);
 		var range = document.createRange();
 		range.selectNodeContents(document.documentElement);
-		htmlDoc.documentElement.appendChild(htmlDoc.importNode(range.createContextualFragment(html),true));
-		return htmlDoc;
+		var fragment = range.createContextualFragment(source);
+		var headChildNames = {title: true, meta: true, link: true, script: true, style: true, /*object: true,*/ base: true/*, isindex: true,*/};
+		var child, head = doc.getElementsByTagName('head')[0] || doc.createElement('head'),
+		           body = doc.getElementsByTagName('body')[0] || doc.createElement('body');
+		while ((child = fragment.firstChild)) {
+			if (
+				(child.nodeType === doc.ELEMENT_NODE && !(child.nodeName.toLowerCase() in headChildNames)) || 
+				(child.nodeType === doc.TEXT_NODE &&/\S/.test(child.nodeValue))
+			   )
+				break;
+			head.appendChild(child);
+		}
+		body.appendChild(fragment);
+		doc.documentElement.appendChild(head);
+		doc.documentElement.appendChild(body);
+		return doc;
 	}
 
-	// @source http://gist.github.com/29681.txt
+	// http://gist.github.com/29681.txt
 	function $X (exp, context, resolver, result_type) {
 		context || (context = document);
 		var Doc = context.ownerDocument || context;
