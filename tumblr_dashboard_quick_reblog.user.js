@@ -12,15 +12,16 @@ new function() {
 	var posts = $X('id("posts")');
 	if (!posts.length) return;
 
-	document.body.addEventListener('DOMNodeInserted', function(e) {
-		var target = e.target;
-		if (target.tagName && target.tagName.toLowerCase() == 'li' && /^post(\d+)$/.test(target.id))
-			add(target);
-	}, false);
-
 	$X('./li', posts[0]).forEach(function(li) {
 		add(li);
 	});
+
+	document.body.addEventListener('DOMNodeInserted', function(e) {
+		var target = e.target;
+		var tag = target.localName;
+		if (tag && tag == 'li' && (/^post(\d+)$/.test(target.id)))
+			add(target);
+	}, false);
 
 	if (window.Minibuffer) {
 		window.Minibuffer.addShortcutkey({
@@ -45,7 +46,7 @@ new function() {
 					urls = stdin.map(function(node) { return node.href; });
 
 				urls = urls.filter(function(url) {
-					return /^https?:\/\/[^.]+\.tumblr\.com\/post\/\d+/.test(url);
+					return (/^https?:\/\/[^.]+\.tumblr\.com\/post\/\d+/.test(url));
 				});
 				urls.map(reblog);
 
