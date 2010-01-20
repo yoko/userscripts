@@ -3,20 +3,20 @@
 // @description   Adds quick reblog link to Tumblr dashboard for Safari + GreaseKit.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.2
+// @version       0.2.1
 // @license       MIT License
 // @work          Greasekit
 // ==/UserScript==
 
 new function() {
-	var posts = $X('id("posts")');
-	if (!posts.length) return;
+	var posts = $X('id("posts")')[0];
+	if (!posts) return;
 
-	$X('./li', posts[0]).forEach(function(li) {
+	$X('./li', posts).forEach(function(li) {
 		add(li);
 	});
 
-	document.body.addEventListener('DOMNodeInserted', function(e) {
+	posts.addEventListener('DOMNodeInserted', function(e) {
 		var target = e.target;
 		var tag = target.localName;
 		if (tag && tag == 'li' && (/^post(\d+)$/.test(target.id)))
@@ -76,6 +76,11 @@ new function() {
 		url = a.href;
 		var uid = 'quick-reblog'+id;
 
+		var link = a.nextSibling;
+		link.innerHTML = '';
+		link.style.padding    = '0 7px';
+		link.style.background = 'url(data:image/gif;base64,R0lGODlhEAAQAPQAAP///6ixuvv8/LrByNTZ3aqyu7S8xPDx8+Dj5q+3v8/U2crP1fX299vf4uvt78DGzcXL0QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH+GkNyZWF0ZWQgd2l0aCBhamF4bG9hZC5pbmZvACH5BAAKAAAAIf8LTkVUU0NBUEUyLjADAQAAACwAAAAAEAAQAAAFUCAgjmRpnqUwFGwhKoRgqq2YFMaRGjWA8AbZiIBbjQQ8AmmFUJEQhQGJhaKOrCksgEla+KIkYvC6SJKQOISoNSYdeIk1ayA8ExTyeR3F749CACH5BAAKAAEALAAAAAAQABAAAAVoICCKR9KMaCoaxeCoqEAkRX3AwMHWxQIIjJSAZWgUEgzBwCBAEQpMwIDwY1FHgwJCtOW2UDWYIDyqNVVkUbYr6CK+o2eUMKgWrqKhj0FrEM8jQQALPFA3MAc8CQSAMA5ZBjgqDQmHIyEAIfkEAAoAAgAsAAAAABAAEAAABWAgII4j85Ao2hRIKgrEUBQJLaSHMe8zgQo6Q8sxS7RIhILhBkgumCTZsXkACBC+0cwF2GoLLoFXREDcDlkAojBICRaFLDCOQtQKjmsQSubtDFU/NXcDBHwkaw1cKQ8MiyEAIfkEAAoAAwAsAAAAABAAEAAABVIgII5kaZ6AIJQCMRTFQKiDQx4GrBfGa4uCnAEhQuRgPwCBtwK+kCNFgjh6QlFYgGO7baJ2CxIioSDpwqNggWCGDVVGphly3BkOpXDrKfNm/4AhACH5BAAKAAQALAAAAAAQABAAAAVgICCOZGmeqEAMRTEQwskYbV0Yx7kYSIzQhtgoBxCKBDQCIOcoLBimRiFhSABYU5gIgW01pLUBYkRItAYAqrlhYiwKjiWAcDMWY8QjsCf4DewiBzQ2N1AmKlgvgCiMjSQhACH5BAAKAAUALAAAAAAQABAAAAVfICCOZGmeqEgUxUAIpkA0AMKyxkEiSZEIsJqhYAg+boUFSTAkiBiNHks3sg1ILAfBiS10gyqCg0UaFBCkwy3RYKiIYMAC+RAxiQgYsJdAjw5DN2gILzEEZgVcKYuMJiEAOwAAAAAAAAAAAA==) no-repeat -1px -1px'
+
 		if (window.Minibuffer)
 			window.Minibuffer.status(uid, 'Reblogging...');
 
@@ -88,10 +93,9 @@ new function() {
 				post.onreadystatechange = function() {
 					if (post.readyState == 4 && post.status == 200) {
 						var span = document.createElement('span');
-						span.style.marginLeft = '10px';
 						span.innerHTML = ':D';
+						span.style.marginLeft = '10px';
 						var parent = a.parentNode;
-						var link = a.nextSibling;
 						parent.insertBefore(span, link);
 						parent.removeChild(link);
 						if (window.Minibuffer)
