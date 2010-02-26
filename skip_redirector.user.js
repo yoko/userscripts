@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       1.1.1
+// @version       1.1.2
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -73,15 +73,9 @@ new function() {
 				else if (link) {
 					var a = $X(link)[0];
 					if (a) {
-						console.log(a);
-						// [fx] can not dispatch event that target is link.
-						if (a.href)
-							location.href = a.href;
-						else {
-							var e = document.createEvent('MouseEvent');
-							e.initEvent('click', false, true);
-							a.dispatchEvent(e);
-						}
+						var e = document.createEvent('MouseEvent');
+						e.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
+						a.dispatchEvent(e);
 						return;
 					}
 				}
