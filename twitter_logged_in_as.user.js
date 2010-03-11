@@ -8,6 +8,7 @@
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
+// @work          Google Chrome
 // ==/UserScript==
 
 new function() {
