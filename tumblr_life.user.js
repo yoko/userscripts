@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys and session bookmarks. Shortcut key function requires Minibuffer and LDRize.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.3.0
+// @version       0.3.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -37,7 +37,7 @@ GM_addStyle([
 	'.tumblr-life-item li input { font-size:12px; }',
 	'.tumblr-life-item li input[type="text"] { width:150px; font-size:11px; }',
 	'.tumblr-life-item > ul > li:hover { color:#7b8994; cursor:pointer; }',
-	'.tumblr-life-item ul ul { margin:5px 0 0!important; padding:5px 10px; font-size:11px; background-color:#e5e5e5; border-radius:0 0 5px 5px; -moz-border-radius:0 0 5px 5px; }',
+	'.tumblr-life-item ul ul { margin:5px 0 0!important; padding:5px 10px; font-size:11px; background-color:#ebebeb; border-radius:0 0 5px 5px; -moz-border-radius:0 0 5px 5px; }',
 	'.tumblr-life-item ul ul li { padding:0; }',
 	'.tumblr-life-item ul ul li label:hover { color:#7b8994; }',
 	'.tumblr-life-success { margin-left:10px; color:#c0c8d3; }',
@@ -147,6 +147,8 @@ TumblrLife.sessionBookmark = {
 
 
 TumblrLife.minibuffer = {
+	reblogging: {},
+
 	setup: function() {
 		if (!window.Minibuffer) return;
 
@@ -205,13 +207,23 @@ TumblrLife.minibuffer = {
 							item = $X('.//div[@class="tumblr-life-item"]/a[text()="reblog"]', entry)[0];
 					}
 					if (item) {
-						window.Minibuffer.status('reblog', 'Reblogging...');
+						var id = entry.id;
+						TumblrLife.minibuffer.reblogging[id] = true;
+						window.Minibuffer.status('reblog'+id, 'Reblogging...');
 						click(item);
 					}
 				}
 				return stdin;
 			}
 		});
+	},
+
+	complete: function(id) {
+		var reblogging = this.reblogging;
+		if (window.Minibuffer && reblogging[id]) {
+			window.Minibuffer.status('reblog'+id, 'Reblogged', 100);
+			delete reblogging[id];
+		}
 	}
 };
 
@@ -330,7 +342,7 @@ TumblrLife.ReblogMenu.prototype = {
 				span.innerHTML = 'reblogged';
 				var div = self.menu;
 				div.parentNode.replaceChild(span, div);
-				if (window.Minibuffer) window.Minibuffer.status('reblog', 'Reblogged', 100);
+				TumblrLife.minibuffer.complete(self.container.id);
 			};
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.send(params);
