@@ -1,9 +1,9 @@
 // ==UserScript==
 // @name          Tumblr Life
-// @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys and session bookmarks. Shortcut key function requires Minibuffer and LDRize.
+// @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.3.1
+// @version       0.3.2
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -123,7 +123,7 @@ TumblrLife.sessionBookmark = {
 		li.innerHTML = [
 			'<p>',
 			'<span>',
-			'<img src="data:image/gif;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAANCAYAAAB2HjRBAAAAV0lEQVQoz2NgoDbYduDWf3Q8qpnWmnccukO+5iXrT5CuedeRe/+nLNjx3z0i+yaIBvGJ1tw/e9M/55DUvVyy2qYgGsQnWrOisctPGWNHcxAbRIP4VE/GAIdHoPagSIsVAAAAAElFTkSuQmCC" alt="" width="15" height="13"/>',
+			'<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAANCAYAAAB2HjRBAAAAV0lEQVQoz2NgoDbYduDWf3Q8qpnWmnccukO+5iXrT5CuedeRe/+nLNjx3z0i+yaIBvGJ1tw/e9M/55DUvVyy2qYgGsQnWrOisctPGWNHcxAbRIP4VE/GAIdHoPagSIsVAAAAAElFTkSuQmCC" alt="" width="15" height="13"/>',
 			text,
 			'</span>',
 			'</p>'
