@@ -65,7 +65,7 @@ var TumblrLife = {
 	setup_handler: function(e) {
 		var target = e.target;
 		var tag = target.localName;
-		if (tag == 'li' && target.id != 'new_post') {
+		if (tag == 'li' && target.id && target.id != 'new_post') {
 			new TumblrLife.ReblogMenu(target);
 			TumblrLife.sessionBookmark.check(target);
 		}
