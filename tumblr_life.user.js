@@ -219,6 +219,7 @@ TumblrLife.minibuffer = {
 				return stdin;
 			}
 		});
+		// http://coderepos.org/share/browser/lang/javascript/userscripts/playontumblr.user.js
 		window.Minibuffer.addCommand({
 			name   : 'like',
 			command: function(stdin) {
