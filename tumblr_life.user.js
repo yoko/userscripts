@@ -176,6 +176,13 @@ TumblrLife.minibuffer = {
 				window.Minibuffer.execute('pinned-or-current-node | reblog -m | clear-pin');
 			}
 		});
+		window.Minibuffer.addShortcutkey({
+			key        : 'l', // XXX: this keybind conflicts with xLDRize
+			description: 'Like',
+			command    : function() {
+				window.Minibuffer.execute('pinned-or-current-node | like | clear-pin');
+			}
+		});
 		window.Minibuffer.addCommand({
 			name   : 'reblog',
 			command: function(stdin) {
@@ -208,6 +215,21 @@ TumblrLife.minibuffer = {
 						window.Minibuffer.status('reblog'+id, 'Reblogging...');
 						click(item);
 					}
+				}
+				return stdin;
+			}
+		});
+		window.Minibuffer.addCommand({
+			name   : 'like',
+			command: function(stdin) {
+				if (!stdin.length) {
+					stdin = window.Minibuffer.execute('current-node');
+				}
+				var items = $X('.//input[contains(concat(" ",@class," "), " like_button ")]', stdin[0]);
+				for (var i = 0; i < items.length; i++) {
+					if (!items[i].clientWidth) continue;
+					items[i].click();
+					return stdin;
 				}
 				return stdin;
 			}
