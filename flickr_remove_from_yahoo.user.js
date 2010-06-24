@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name          Flickr Mask "from Yahoo!"
+// @name          Flickr Remove "from Yahoo!"
 // @description   Removes "from Yahoo!" from Flickr logo.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.flickr.com/*
