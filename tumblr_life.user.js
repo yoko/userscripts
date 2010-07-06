@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.4
+// @version       0.4.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -207,7 +207,7 @@ TumblrLife.minibuffer = {
 			}
 		});
 		window.Minibuffer.addShortcutkey({
-			key        : 'l', // XXX: this keybind conflicts with xLDRize
+			key        : 'a',
 			description: 'Like',
 			command    : function() {
 				window.Minibuffer.execute('pinned-or-current-node | like | clear-pin');
@@ -223,8 +223,7 @@ TumblrLife.minibuffer = {
 					if (entry) entries.push(entry);
 					else return;
 				}
-				for (var i = 0, l = entries.length; i < l; i++) {
-					entry = entries[i];
+				entries.forEach(function(entry) {
 					var item;
 					switch (args[0]) {
 						case '-q':
@@ -245,23 +244,28 @@ TumblrLife.minibuffer = {
 						window.Minibuffer.status('reblog'+id, 'Reblogging...');
 						click(item);
 					}
-				}
+				});
 				return stdin;
 			}
 		});
-		// http://coderepos.org/share/browser/lang/javascript/userscripts/playontumblr.user.js
 		window.Minibuffer.addCommand({
 			name   : 'like',
 			command: function(stdin) {
+				var entries = stdin, entry;
 				if (!stdin.length) {
-					stdin = window.Minibuffer.execute('current-node');
+					entry = window.Minibuffer.execute('current-node');
+					if (entry) entries.push(entry);
+					else return;
 				}
-				var items = $X('.//input[contains(concat(" ",@class," "), " like_button ")]', stdin[0]);
-				for (var i = 0; i < items.length; i++) {
-					if (!items[i].clientWidth) continue;
-					items[i].click();
-					return stdin;
-				}
+				entries.forEach(function(entry) {
+					var buttons = $X('.//input[contains(@class, "like_button")]', entry);
+					for (var i = 0, button; button = buttons[i]; ++i) {
+						if (!button.clientWidth) continue;
+						window.Minibuffer.status('like'+entry.id, button.title+'d', 100);
+						click(button);
+						break;
+					}
+				});
 				return stdin;
 			}
 		});
