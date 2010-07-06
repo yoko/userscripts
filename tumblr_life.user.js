@@ -77,21 +77,16 @@ var TumblrLife = {
 
 TumblrLife.sessionBookmark = {
 	image: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAANCAYAAAB2HjRBAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAP0lEQVQoU2P4//8/A7kYq+CBExf+o+NRzYNac8+MJeRpBmlUtw2GG0C0ZphGbZc4uAFEa4ZpBLFhBhCtmVgMAJSySjzlt1umAAAAAElFTkSuQmCC',
+	data : null,
 
 	setup: function(entry) {
 		this.list();
 		if (location.pathname == '/dashboard') {
-			var id = entry.id.replace('post', '');
+			var id = entry.id.slice(4);
 			if (id) {
 				var data = this.load();
-				if (!data.length || id != data[0].id) {
-					data.unshift({
-						id  : id,
-						date: +(new Date)
-					});
-					data.length = BOOKMARK_SESSION;
-					this.save(data);
-				}
+				if (!data.length || id != data[0].id)
+					this.save(id);
 			}
 		}
 	},
@@ -106,27 +101,38 @@ TumblrLife.sessionBookmark = {
 		}
 	},
 
-	save: function(data) {
+	save: function(id) {
+		var data = this.data;
+		if (!data) return;
+		data.unshift({
+			id  : id,
+			date: +(new Date)
+		});
+		data.length = BOOKMARK_SESSION;
 		var json = JSON.stringify(data);
 		GM_log('save session bookmark: '+json);
 		unsafeWindow.localStorage.tumblr_life_session_bookmark = json;
 	},
 
 	load: function() {
-		var json = unsafeWindow.localStorage.tumblr_life_session_bookmark;
-		GM_log('load session bookmark: '+json);
-		return (json) ? JSON.parse(json) : [];
+		if (!this.data) {
+			var json = unsafeWindow.localStorage.tumblr_life_session_bookmark;
+			GM_log('load session bookmark: '+json);
+			this.data = (json) ? JSON.parse(json) : [];
+		}
+		return this.data;
 	},
 
 	list: function() {
 		if (!(/^\/dashboard/.test(location.pathname))) return;
 		var sessions = this.load();
-		console.log(sessions);
 		var li = [];
 		for (var i = 0, session; session = sessions[i]; ++i) {
 			if (session.id)
 				li.push('<li><a href="/dashboard/2/'+session.id+'"><img src="'+this.image+'" width="15" height="13"/>'+this.format_date(session.date)+'</a></li>');
 		}
+		if (!li.length) return;
+
 		var div = document.createElement('div');
 		div.className = 'dashboard_nav_item';
 		div.style.paddingLeft = 0;
@@ -326,7 +332,7 @@ TumblrLife.ReblogMenu.prototype = {
 		link.parentNode.replaceChild(div, link);
 	},
 
-	itemlist: function(container) {
+	itemlist: function() {
 		var self = this;
 		var enable_twitter = this.twitter();
 		var twitter = enable_twitter ?
@@ -337,6 +343,7 @@ TumblrLife.ReblogMenu.prototype = {
 			'<li class="tumblr-life-add-to-queue">add to queue</li>',
 			'<li class="tumblr-life-private">private</li>',
 			'<li><a href="'+this.label.href+'" target="_blank" class="tumblr-life-reblog-manually">reblog manually</a></li>',
+			'<li>bookmark</li>',
 			'<ul class="option">',
 			'<li><input type="text" value="" placeholder="tags" class="tumblr-life-tags"/></li>',
 			twitter,
@@ -350,6 +357,10 @@ TumblrLife.ReblogMenu.prototype = {
 					self.reblog(filter);
 				}, false);
 		});
+		$X('./li[text()="bookmark"]', ul)[0].addEventListener('click', function() {
+			TumblrLife.sessionBookmark.save(self.container.id.slice(4));
+		}, false);
+
 		if (enable_twitter) {
 			var edit = $X('.//span[@class="tumblr-life-twitter-edit"]', ul)[0];
 			$X('.//input[@class="tumblr-life-twitter"]', ul)[0].addEventListener('change', function(e) {
