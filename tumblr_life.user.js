@@ -269,12 +269,9 @@ TumblrLife.minibuffer = {
 					else return;
 				}
 				entries.forEach(function(entry) {
-					var item = $X('.//li[text()="bookmark"]', entry)[0];
-					if (item) {
-						var id = TumblrLife.id(entry.id);
-						window.Minibuffer.status('bookmark'+id, 'Bookmarked', 100);
-						click(item);
-					}
+					var id = TumblrLife.id(entry.id);
+					TumblrLife.sessionBookmark.save(id);
+					window.Minibuffer.status('bookmark'+id, 'Bookmarked', 100);
 				});
 				return stdin;
 			}
@@ -288,15 +285,11 @@ TumblrLife.minibuffer = {
 					if (entry) entries.push(entry);
 					else return;
 				}
-				entries.forEach(function(entry) {
-					var item = $X('.//li[text()="bookmark"]', entry)[0];
-					if (item) {
-						var id = TumblrLife.id(entry.id);
-						window.Minibuffer.status('restore'+id, 'Reloading...');
-						click(item);
-						location.href = '/dashboard/2/'+id;
-					}
-				});
+				var entry = entries.pop();
+				var id = TumblrLife.id(entry.id);
+				TumblrLife.sessionBookmark.save(id);
+				window.Minibuffer.status('restore'+id, 'Reloading...');
+				location.href = '/dashboard/2/'+id;
 				return stdin;
 			}
 		});
@@ -418,7 +411,7 @@ TumblrLife.ReblogMenu.prototype = {
 				}, false);
 		});
 		$X('./li[text()="bookmark"]', ul)[0].addEventListener('click', function() {
-			TumblrLife.sessionBookmark.save(self.container.id.slice(4));
+			TumblrLife.sessionBookmark.save(TumblrLife.id(self.container.id));
 		}, false);
 
 		if (enable_twitter) {
