@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.4.1
+// @version       0.4.2
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -185,6 +185,20 @@ TumblrLife.minibuffer = {
 		if (!window.Minibuffer) return;
 
 		window.Minibuffer.addShortcutkey({
+			key        : 'a',
+			description: 'Like',
+			command    : function() {
+				window.Minibuffer.execute('pinned-or-current-node | like | clear-pin');
+			}
+		});
+		window.Minibuffer.addShortcutkey({
+			key        : 'z',
+			description: 'Bookmark',
+			command    : function() {
+				window.Minibuffer.execute('pinned-or-current-node | bookmark | clear-pin');
+			}
+		});
+		window.Minibuffer.addShortcutkey({
 			key        : 'r',
 			description: 'Reblog',
 			command    : function() {
@@ -212,11 +226,44 @@ TumblrLife.minibuffer = {
 				window.Minibuffer.execute('pinned-or-current-node | reblog -m | clear-pin');
 			}
 		});
-		window.Minibuffer.addShortcutkey({
-			key        : 'a',
-			description: 'Like',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | like | clear-pin');
+		window.Minibuffer.addCommand({
+			name   : 'like',
+			command: function(stdin) {
+				var entries = stdin, entry;
+				if (!stdin.length) {
+					entry = window.Minibuffer.execute('current-node');
+					if (entry) entries.push(entry);
+					else return;
+				}
+				entries.forEach(function(entry) {
+					var buttons = $X('.//input[contains(@class, "like_button")]', entry);
+					for (var i = 0, button; button = buttons[i]; ++i) {
+						if (!button.clientWidth) continue;
+						window.Minibuffer.status('like'+entry.id, button.title+'d', 100);
+						click(button);
+						break;
+					}
+				});
+				return stdin;
+			}
+		});
+		window.Minibuffer.addCommand({
+			name   : 'bookmark',
+			command: function(stdin) {
+				var entries = stdin, entry;
+				if (!stdin.length) {
+					entry = window.Minibuffer.execute('current-node');
+					if (entry) entries.push(entry);
+					else return;
+				}
+				entries.forEach(function(entry) {
+					var item = $X('.//li[text()="bookmark"]', entry)[0];
+					if (item) {
+						window.Minibuffer.status('bookmark'+entry.id, 'Bookmarked', 100);
+						click(item);
+					}
+				});
+				return stdin;
 			}
 		});
 		window.Minibuffer.addCommand({
@@ -249,27 +296,6 @@ TumblrLife.minibuffer = {
 						TumblrLife.minibuffer.reblogging[id] = true;
 						window.Minibuffer.status('reblog'+id, 'Reblogging...');
 						click(item);
-					}
-				});
-				return stdin;
-			}
-		});
-		window.Minibuffer.addCommand({
-			name   : 'like',
-			command: function(stdin) {
-				var entries = stdin, entry;
-				if (!stdin.length) {
-					entry = window.Minibuffer.execute('current-node');
-					if (entry) entries.push(entry);
-					else return;
-				}
-				entries.forEach(function(entry) {
-					var buttons = $X('.//input[contains(@class, "like_button")]', entry);
-					for (var i = 0, button; button = buttons[i]; ++i) {
-						if (!button.clientWidth) continue;
-						window.Minibuffer.status('like'+entry.id, button.title+'d', 100);
-						click(button);
-						break;
 					}
 				});
 				return stdin;
