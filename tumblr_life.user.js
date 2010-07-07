@@ -89,25 +89,27 @@ TumblrLife.sessionBookmark = {
 			var id = TumblrLife.id(entry.id);
 			if (id) {
 				var data = this.load();
-				if (!data.length || id != data[0].id)
-					this.save(id);
+				this.save(id);
 			}
 		}
 	},
 
 	check: function(entry) {
 		if (!(/^\/dashboard/.test(location.pathname))) return;
-		var id = entry.id.replace('post', '');
+		var id = TumblrLife.id(entry.id);
 		var sessions = this.load();
 		for (var i = 0, session; session = sessions[i]; ++i) {
-			if (id == session.id)
+			if (id == session.id) {
 				this.show(entry, session.date);
+				break;
+			}
 		}
 	},
 
 	save: function(id) {
 		var data = this.data;
 		if (!data) return;
+		if (data.length && id == data[0].id) data.shift();
 		data.unshift({
 			id  : id,
 			date: +(new Date)
@@ -244,7 +246,7 @@ TumblrLife.minibuffer = {
 				if (!stdin.length) {
 					entry = window.Minibuffer.execute('current-node');
 					if (entry) entries.push(entry);
-					else return;
+					else return stdin;
 				}
 				entries.forEach(function(entry) {
 					var buttons = $X('.//input[contains(@class, "like_button")]', entry);
@@ -262,11 +264,11 @@ TumblrLife.minibuffer = {
 		window.Minibuffer.addCommand({
 			name   : 'bookmark',
 			command: function(stdin) {
-				var entries = stdin, entry;
+				var entries = stdin;
 				if (!stdin.length) {
-					entry = window.Minibuffer.execute('current-node');
+					var entry = window.Minibuffer.execute('current-node');
 					if (entry) entries.push(entry);
-					else return;
+					else return stdin;
 				}
 				entries.forEach(function(entry) {
 					var id = TumblrLife.id(entry.id);
@@ -283,9 +285,9 @@ TumblrLife.minibuffer = {
 				if (!stdin.length) {
 					entry = window.Minibuffer.execute('current-node');
 					if (entry) entries.push(entry);
-					else return;
+					else return stdin;
 				}
-				var entry = entries.pop();
+				entry = entries.pop();
 				var id = TumblrLife.id(entry.id);
 				TumblrLife.sessionBookmark.save(id);
 				window.Minibuffer.status('restore'+id, 'Reloading...');
@@ -297,11 +299,11 @@ TumblrLife.minibuffer = {
 			name   : 'reblog',
 			command: function(stdin) {
 				var args = this.args;
-				var entries = stdin, entry;
+				var entries = stdin;
 				if (!stdin.length) {
-					entry = window.Minibuffer.execute('current-node');
+					var entry = window.Minibuffer.execute('current-node');
 					if (entry) entries.push(entry);
-					else return;
+					else return stdin;
 				}
 				entries.forEach(function(entry) {
 					var item;
