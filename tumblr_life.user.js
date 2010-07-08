@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.4.4
+// @version       0.4.5
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -74,7 +74,7 @@ var TumblrLife = {
 	},
 
 	id: function(id) {
-		return id.slice(4);
+		return id.replace('post', '');
 	}
 };
 
@@ -86,7 +86,7 @@ TumblrLife.sessionBookmark = {
 	setup: function(entry) {
 		this.list();
 		if (location.pathname == '/dashboard') {
-			var id = TumblrLife.id(entry.id);
+			var id = entry.id;
 			if (id) {
 				var data = this.load();
 				this.save(id);
@@ -107,8 +107,9 @@ TumblrLife.sessionBookmark = {
 	},
 
 	save: function(id) {
+		id = TumblrLife.id(id);
 		var data = this.data;
-		if (!data) return;
+		if (!data) return false;
 		if (data.length && id == data[0].id) data.shift();
 		data.unshift({
 			id  : id,
@@ -118,6 +119,7 @@ TumblrLife.sessionBookmark = {
 		var json = JSON.stringify(data);
 		GM_log('save session bookmark: '+json);
 		unsafeWindow.localStorage.tumblr_life_session_bookmark = json;
+		return true;
 	},
 
 	load: function() {
@@ -168,6 +170,11 @@ TumblrLife.sessionBookmark = {
 		$X('id("posts")')[0].insertBefore(li, entry);
 	},
 
+	reload: function(id) {
+		id = TumblrLife.id(id);
+		location.href = '/dashboard/2/'+id;
+	},
+
 	format_date: function(date) {
 		date = new Date(date);
 		var y = date.getFullYear();
@@ -206,7 +213,7 @@ TumblrLife.minibuffer = {
 		});
 		window.Minibuffer.addShortcutkey({
 			key        : 'x',
-			description: 'restore',
+			description: 'Restore',
 			command    : function() {
 				window.Minibuffer.execute('pinned-or-current-node | restore | clear-pin');
 			}
@@ -252,9 +259,8 @@ TumblrLife.minibuffer = {
 					var buttons = $X('.//input[contains(@class, "like_button")]', entry);
 					for (var i = 0, button; button = buttons[i]; ++i) {
 						if (!button.clientWidth) continue;
-						var id = TumblrLife.id(entry.id);
-						window.Minibuffer.status('like'+id, button.title+'d', 100);
 						click(button);
+						window.Minibuffer.status('like'+entry.id, button.title+'d', 100);
 						break;
 					}
 				});
@@ -271,9 +277,11 @@ TumblrLife.minibuffer = {
 					else return stdin;
 				}
 				entries.forEach(function(entry) {
-					var id = TumblrLife.id(entry.id);
-					TumblrLife.sessionBookmark.save(id);
-					window.Minibuffer.status('bookmark'+id, 'Bookmarked', 100);
+					var id = entry.id;
+					if (TumblrLife.sessionBookmark.save(id)) {
+						($X('.//li[text()="bookmark"]', entry)[0] || {}).innerHTML = 'bookmarked';
+						window.Minibuffer.status('bookmark'+id, 'Bookmarked', 100);
+					}
 				});
 				return stdin;
 			}
@@ -288,10 +296,12 @@ TumblrLife.minibuffer = {
 					else return stdin;
 				}
 				entry = entries.pop();
-				var id = TumblrLife.id(entry.id);
-				TumblrLife.sessionBookmark.save(id);
-				window.Minibuffer.status('restore'+id, 'Reloading...');
-				location.href = '/dashboard/2/'+id;
+				var id = entry.id;
+				var session_bookmark = TumblrLife.sessionBookmark;
+				if (session_bookmark.save(id)) {
+					window.Minibuffer.status('restore'+id, 'Reloading...');
+					session_bookmark.reload(id);
+				}
 				return stdin;
 			}
 		});
@@ -321,7 +331,7 @@ TumblrLife.minibuffer = {
 							item = $X('.//div[@class="tumblr-life-item"]/a[text()="reblog"]', entry)[0];
 					}
 					if (item) {
-						var id = TumblrLife.id(entry.id);
+						var id = entry.id;
 						TumblrLife.minibuffer.reblogging[id] = true;
 						window.Minibuffer.status('reblog'+id, 'Reblogging...');
 						click(item);
@@ -412,8 +422,9 @@ TumblrLife.ReblogMenu.prototype = {
 					self.reblog(filter);
 				}, false);
 		});
-		$X('./li[text()="bookmark"]', ul)[0].addEventListener('click', function() {
-			TumblrLife.sessionBookmark.save(TumblrLife.id(self.container.id));
+		$X('./li[text()="bookmark"]', ul)[0].addEventListener('click', function(e) {
+			if (TumblrLife.sessionBookmark.save(self.container.id))
+				e.target.innerHTML = 'bookmarked';
 		}, false);
 
 		if (enable_twitter) {
@@ -486,7 +497,7 @@ TumblrLife.ReblogMenu.prototype = {
 				span.innerHTML = 'reblogged';
 				var div = self.menu;
 				div.parentNode.replaceChild(span, div);
-				TumblrLife.minibuffer.complete(TumblrLife.id(self.container.id));
+				TumblrLife.minibuffer.complete(self.container.id);
 			};
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.send(params);
