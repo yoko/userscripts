@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.4.5
+// @version       0.5b
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -354,6 +354,7 @@ TumblrLife.minibuffer = {
 
 TumblrLife.ReblogMenu = function(container) {
 	this.container = container;
+	this.id = TumblrLife.id(container.id);
 	this.show();
 };
 
@@ -364,6 +365,8 @@ TumblrLife.ReblogMenu.prototype = {
 	menu        : null,
 	label       : null,
 	itemlist    : null,
+	id          : null,
+	reblogged_id: null,
 	custom_tweet: '',
 
 	show: function() {
@@ -423,7 +426,7 @@ TumblrLife.ReblogMenu.prototype = {
 				}, false);
 		});
 		$X('./li[text()="bookmark"]', ul)[0].addEventListener('click', function(e) {
-			if (TumblrLife.sessionBookmark.save(self.container.id))
+			if (TumblrLife.sessionBookmark.save(self.id))
 				e.target.innerHTML = 'bookmarked';
 		}, false);
 
@@ -491,13 +494,8 @@ TumblrLife.ReblogMenu.prototype = {
 			xhr.onload = function() {
 				self.reblogging = false;
 				self.reblogged = true;
-				label.className = '';
-				var span = document.createElement('span');
-				span.className = 'tumblr-life-success';
-				span.innerHTML = 'reblogged';
-				var div = self.menu;
-				div.parentNode.replaceChild(span, div);
-				TumblrLife.minibuffer.complete(self.container.id);
+				self.complete();
+				TumblrLife.minibuffer.complete('post'+self.id);
 			};
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.send(params);
@@ -509,6 +507,56 @@ TumblrLife.ReblogMenu.prototype = {
 			label.innerHTML = '<span class="tumblr-life-fail">reblog</span>';
 		};
 		xhr.send();
+	},
+
+	complete: function() {
+		var self = this;
+		var primary = $X('//li[contains(@class, "is_mine")]//a[@class="post_avatar"]')[0];
+		if (!primary && !(/^\/dashboard/.test(location.pathname)))
+			primary = $X('//div[@class="dashboard_nav_item"][1]//a')[0];
+		if (!primary ||	!(primary = (/http:\/\/([^.]+)\.tumblr\.com/.exec(primary.href) || [])[1])) {
+			this.show_reblogged();
+			return;
+		}
+		var xhr = new XMLHttpRequest;
+		xhr.open('GET', '/tumblelog/'+primary);
+		xhr.onload = function() {
+			var control = $X(
+				'//div[@class="post_info"][contains(a[1]/@href, "/'+self.id+'")]/preceding-sibling::div[@class="post_controls"]',
+				createDocumentFromString(xhr.responseText)
+			)[0];
+			if (control)
+				self.reblogged_id = TumblrLife.id($X('..', control)[0].id);
+			self.show_reblogged(control);
+		};
+		xhr.onerror = function() {
+			self.ahow_reblogged();
+		};
+		xhr.send();
+	},
+
+	show_reblogged: function(control) {
+		this.label.className = '';
+		if (!control) {
+			control = document.createElement('span');
+			control.className = 'tumblr-life-success';
+			control.innerHTML = 'reblogged';
+			control = [control];
+		}
+		else {
+			var redirect_to = '/dashboard/2/'+this.id;
+			control.removeChild($X('./a[1]', control)[0]);
+			$X('.//input[@name="redirect_to"]', control)[0].value = redirect_to;
+			var edit = $X('./a[text()="edit"]', control)[0];
+			edit.href   = '/edit/'+this.reblogged_id+'?redirect_to='+encodeURIComponent(redirect_to);
+			edit.target = '_blank';
+			control = document.importNode(control, true).childNodes;
+		}
+		var menu = this.menu;
+		var controls = menu.parentNode;
+		for (var i = 0, c; c = control[i]; ++i)
+			controls.insertBefore(c, menu);
+		controls.removeChild(menu);
 	},
 
 	param: function(html, filter) {
