@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5b
+// @version       0.5b2
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -45,7 +45,13 @@ GM_addStyle([
 	'.tumblr-life-fail { color:#c00; }',
 	'.tumblr-life-session-bookmark { margin-left:-85px; font:11px "Lucida Grande",Verdana,sans-serif; text-align:center; color:#C4CDD6; background:url(http://assets.tumblr.com/images/dashboard_nav_border.png) repeat-x center; }',
 	'.tumblr-life-session-bookmark img { margin-right:5px; vertical-align:middle; }',
-	'.tumblr-life-session-bookmark span { padding:0 10px; background-color:#2c4762; }'
+	'.tumblr-life-session-bookmark span { padding:0 10px; background-color:#2c4762; }',
+	'#tumblr-life-filter { margin:20px 0 0; text-align:right }',
+	'#tumblr-life-filter select { font-size:12px; }',
+	'#tumblr-life-filter1 { display:none; position:absolute; z-index:100; top:26px; margin:0; padding:0; background-color:#1f354c; }',
+	'#tumblr-life-filter1 li { list-style:none; font-size:16px; }',
+	'#tumblr-life-filter1 li a { display:block; padding:3px 8px 2px; color:#fff; text-decoration:none; }',
+	'#tumblr-life-filter1 li a.current, #tumblr-life-filter1 li a:hover { color:#dde7f0; }'
 ].join(''));
 
 
@@ -62,6 +68,8 @@ var TumblrLife = {
 		});
 		TumblrLife.sessionBookmark.setup(li[1]);
 		TumblrLife.minibuffer.setup();
+
+		this.show_filter();
 	},
 
 	setup_handler: function(e) {
@@ -71,6 +79,34 @@ var TumblrLife = {
 			new TumblrLife.ReblogMenu(target);
 			TumblrLife.sessionBookmark.check(target);
 		}
+	},
+
+	show_filter: function() {
+		var current = (/^\/show\/([^\/]+)/.exec(location.pathname) || [])[1] || 'dashboard';
+		var filters = ['Dashboard', 'Text', 'Photos', 'Quotes', 'Links', 'Chats', 'Audio', 'Videos'];
+
+		var li = [];
+		for (var i = 0, filter; filter = filters[i]; ++i) {
+			var f = filter.toLowerCase();
+			var href = (f == 'dashboard' ? '/' : '/show/')+f;
+			var klass = (f == current) ? ' class="current"' : '';
+			li.push('<li><a href="'+href+'"'+klass+'>'+filter+'</a></li>');
+		}
+		var ul = document.createElement('ul');
+		ul.id = 'tumblr-life-filter1';
+		ul.innerHTML = li.join('');
+		ul.addEventListener('mouseout', function(e) {
+			if (e.relatedTarget.parentNode.parentNode == ul) return;
+			ul.style.display = 'none';
+		}, false);
+		document.getElementById('header').appendChild(ul);
+
+		var a = $X('id("nav")/a[1]')[0];
+		a.addEventListener('mouseover', function() {
+			var style = ul.style;
+			style.right   = (190 + 450 - a.offsetLeft - a.offsetWidth)+'px';
+			style.display = 'block';
+		}, false);
 	},
 
 	id: function(id) {
@@ -390,7 +426,7 @@ TumblrLife.ReblogMenu.prototype = {
 		}, false);
 		var timer;
 		div.addEventListener('mouseover', function(e) {
-			if (self.reblogging) return;
+			if (self.reblogging || self.reblogged) return;
 			ul.style.display = 'block';
 		}, false);
 		div.addEventListener('mouseout', function(e) {
@@ -449,11 +485,11 @@ TumblrLife.ReblogMenu.prototype = {
 				param.value = $X('.//input[@class="tumblr-life-tags"]', this.itemlist)[0].value;
 				return true;
 			case 'send_to_twitter':
-				var value = $X('.//input[@class="tumblr-life-twitter"]', this.itemlist)[0].checked;
-				return (value) ? !!(param.value = '1') : false;
+				var twitter = ($X('.//input[@class="tumblr-life-twitter"]', this.itemlist)[0] || {}).checked;
+				return (twitter) ? !!(param.value = '1') : false;
 			case 'custom_tweet':
-				var checked = $X('.//input[@class="tumblr-life-twitter"]', this.itemlist)[0].checked;
-				return (checked) ? !!(param.value = this.custom_tweet) : false;
+				var twitter = ($X('.//input[@class="tumblr-life-twitter"]', this.itemlist)[0] || {}).checked;
+				return (twitter) ? !!(param.value = this.custom_tweet) : false;
 			default: return true;
 		}
 	},
@@ -467,7 +503,9 @@ TumblrLife.ReblogMenu.prototype = {
 	},
 
 	twitter: function() {
-		return ($X('//a[@class="dashboard_switch_blog_menu_item"][last()]')[0].style.backgroundImage.indexOf('twitter_favicon') != -1);
+		var item = $X('//a[@class="dashboard_switch_blog_menu_item"][last()]')[0];
+		if (!item) return false;
+		return (item.style.backgroundImage.indexOf('twitter_favicon') != -1);
 	},
 
 	set_custom_tweet: function() {
@@ -492,10 +530,7 @@ TumblrLife.ReblogMenu.prototype = {
 
 			xhr.open('POST', url, true);
 			xhr.onload = function() {
-				self.reblogging = false;
-				self.reblogged = true;
 				self.complete();
-				TumblrLife.minibuffer.complete('post'+self.id);
 			};
 			xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
 			xhr.send(params);
@@ -511,6 +546,13 @@ TumblrLife.ReblogMenu.prototype = {
 
 	complete: function() {
 		var self = this;
+		var id = this.id;
+		this.reblogging = false;
+		this.reblogged = true;
+		unsafeWindow.increment_note_count(id);
+		TumblrLife.minibuffer.complete('post'+id);
+		this.label.innerHTML = 'reblogged';
+
 		var primary = $X('//li[contains(@class, "is_mine")]//a[@class="post_avatar"]')[0];
 		if (!primary && !(/^\/dashboard/.test(location.pathname)))
 			primary = $X('//div[@class="dashboard_nav_item"][1]//a')[0];
@@ -522,7 +564,7 @@ TumblrLife.ReblogMenu.prototype = {
 		xhr.open('GET', '/tumblelog/'+primary);
 		xhr.onload = function() {
 			var control = $X(
-				'//div[@class="post_info"][contains(a[1]/@href, "/'+self.id+'")]/preceding-sibling::div[@class="post_controls"]',
+				'//div[@class="post_info"][contains(a[1]/@href, "/'+id+'")]/preceding-sibling::div[@class="post_controls"]',
 				createDocumentFromString(xhr.responseText)
 			)[0];
 			if (control)
