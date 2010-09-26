@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5b5
+// @version       0.5
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
