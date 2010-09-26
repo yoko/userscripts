@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5b4
+// @version       0.5b5
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -11,8 +11,6 @@
 // ==/UserScript==
 
 new function() {
-
-const BOOKMARK_SESSION = 5;
 
 if (typeof unsafeWindow == 'undefined') unsafeWindow = window;
 
@@ -55,8 +53,18 @@ GM_addStyle([
 
 
 var TumblrLife = {
+	config: null,
+
 	setup: function() {
 		var self = this;
+		this.load_config();
+
+		if (location.pathname == '/preferences') {
+			TumblrLife.show_config();
+			$X('id("content")/form')[0].addEventListener('submit', this.save_config, false);
+			return;
+		}
+
 		var posts = $X('id("posts")')[0];
 		if (!posts) return;
 
@@ -70,6 +78,48 @@ var TumblrLife = {
 		TumblrLife.minibuffer.setup();
 
 		this.show_filter();
+	},
+
+	load_config: function() {
+		var json = unsafeWindow.localStorage.tumblr_life_config;
+		TumblrLife.log('load config: '+json);
+		var config = (json) ? JSON.parse(json) : {};
+		this.config = extend({
+			bookmark_session: 5,
+			trim_reblog_info: true
+		}, config);
+	},
+
+	save_config: function(e) {
+		var data = extend(TumblrLife.config, {
+			trim_reblog_info: $X('id("tumblr-life-config-trim-reblog-info")')[0].checked
+		});
+		var json = JSON.stringify(data);
+		unsafeWindow.localStorage.tumblr_life_config = json;
+		return true;
+	},
+
+	show_config: function() {
+		var config = this.config;
+		var trim_reblog_info = config.trim_reblog_info ? ' checked="checked"' : '';
+
+		var div = document.createElement('div');
+		div.id = 'tumblr-life-config';
+		div.innerHTML = [
+			'<div class="left_column less_vertical_spacing"><a href="http://userscripts.org/scripts/show/59330">Tumblr Life</a></div>',
+			'<div class="right_column">',
+			'<table border="0" cellspacing="0" cellpadding="0">',
+			'<tbody>',
+			'<tr>',
+			'<td valign="top"><input id="tumblr-life-config-trim-reblog-info" type="checkbox"'+trim_reblog_info+' style="margin-right:5px;"/></td>',
+			'<td valign="top"><label for="tumblr-life-config-trim-reblog-info">Trim reblog info</label></td>',
+			'</tr>',
+			'</tbody>',
+			'</table>',
+			'</div>',
+			'<div class="clear"></div>'
+		].join('');
+		$X('id("content")/form/div')[0].appendChild(div);
 	},
 
 	setup_handler: function(e) {
@@ -168,7 +218,7 @@ TumblrLife.sessionBookmark = {
 			id  : id,
 			date: +(new Date)
 		});
-		data.length = BOOKMARK_SESSION;
+		data.length = TumblrLife.config.bookmark_session;
 		var json = JSON.stringify(data);
 		TumblrLife.log('save session bookmark ('+this.page+'): '+json);
 		unsafeWindow.localStorage[this.storage_name()] = json;
@@ -527,7 +577,7 @@ TumblrLife.ReblogMenu.prototype = {
 		return ul;
 	},
 
-	filter: function(param) {
+	filter: function(param, params) {
 		var twitter;
 		switch (param.name) {
 			case 'preview_post': return false;
@@ -540,6 +590,20 @@ TumblrLife.ReblogMenu.prototype = {
 			case 'custom_tweet':
 				twitter = ($X('.//input[@class="tumblr-life-twitter"]', this.itemlist)[0] || {}).checked;
 				return (twitter) ? !!(param.value = this.custom_tweet) : false;
+			case 'post[two]':
+				var type = params['post[type]'];
+				if (TumblrLife.config.trim_reblog_info) {
+					var value = param.value;
+					if (type == 'regular' || type == 'photo' || type == 'video')
+						param.value = this.trim_reblog_info(value);
+					else if (type == 'quote')
+						param.value = value.replace(/ \(via <a.*?<\/a>\)/g, '').trim();
+				}
+				return true;
+			case 'post[three]':
+				if (TumblrLife.config.trim_reblog_info && params['post[type]'] == 'link')
+					param.value = this.trim_reblog_info(value);
+				return true;
 			default: return true;
 		}
 	},
@@ -560,6 +624,17 @@ TumblrLife.ReblogMenu.prototype = {
 
 	set_custom_tweet: function() {
 		this.custom_tweet = window.prompt('140 letters limit (empty to default)', ' [URL]') || '';
+	},
+
+	// @http://github.com/to/tombloo/blob/master/xpi/chrome/content/library/20_Tumblr.js
+	trim_reblog_info: function(value) {
+		if (!TumblrLife.config.trim_reblog_info) return value;
+		value = value
+			.replace(/<p><\/p>/g, '')
+			.replace(/<p><a[^<]+<\/a>:<\/p>/g, '');
+		return (function loop(all, content) {
+			return content.replace(/<blockquote>([\s\S]+)<\/blockquote>/gm, loop);
+		})(null, value).trim();
 	},
 
 	reblog: function(filter) {
@@ -636,8 +711,8 @@ TumblrLife.ReblogMenu.prototype = {
 			control = [control];
 		}
 		else {
-			var redirect_to = '/dashboard/2/'+this.id;
-			control.removeChild($X('./a[1]', control)[0]);
+			var redirect_to = TumblrLife.sessionBookmark.make_session_url(this.id);
+			control.removeChild($X('./a[1]', control)[0]); // notes
 			$X('.//input[@name="redirect_to"]', control)[0].value = redirect_to;
 			var edit = $X('./a[text()="edit"]', control)[0];
 			edit.href   = '/edit/'+this.reblogged_id+'?redirect_to='+encodeURIComponent(redirect_to);
@@ -653,16 +728,18 @@ TumblrLife.ReblogMenu.prototype = {
 
 	param: function(html, filter) {
 		var self = this;
-		var params = $X(
+		var param_list = $X(
 			'id("edit_post")//*[name()="input" or name()="textarea" or name()="select"]',
 			createDocumentFromString(html)
 		);
 		var q = [];
-		params.forEach(function(p) {
-			var param = { name: p.name, value: p.value };
-
-			if (self.filter(param) !== false) {
-				if (typeof filter != 'function' || filter(param) !== false)
+		var params = {};
+		param_list.forEach(function(param) {
+			params[param.name] = param.value;
+		});
+		param_list.forEach(function(param) {
+			if (self.filter(param, params) !== false) {
+				if (typeof filter != 'function' || filter(param, params) !== false)
 					q.push(encodeURIComponent(param.name)+'='+encodeURIComponent(param.value));
 			}
 		});
