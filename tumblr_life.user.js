@@ -86,7 +86,7 @@ var TumblrLife = {
 		var config = (json) ? JSON.parse(json) : {};
 		this.config = extend({
 			bookmark_session: 5,
-			trim_reblog_info: true
+			trim_reblog_info: false
 		}, config);
 	},
 
