@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5.1
+// @version       0.5.2
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -57,6 +57,7 @@ var TumblrLife = {
 
 	setup: function() {
 		var self = this;
+		this.show_filter();
 		this.load_config();
 
 		if (location.pathname == '/preferences') {
@@ -65,10 +66,8 @@ var TumblrLife = {
 			return;
 		}
 
-		this.show_filter();
-
 		var posts = $X('id("posts")')[0];
-		if (!posts || !(TumblrLife.sessionBookmark || TumblrLife.ReblogMenu.supported)) return;
+		if (!posts || !(TumblrLife.sessionBookmark.supported || TumblrLife.ReblogMenu.supported)) return;
 
 		posts.addEventListener('DOMNodeInserted', this.setup_handler, false);
 		var li = $X('./li[starts-with(@id, "post")]', posts);
@@ -134,6 +133,9 @@ var TumblrLife = {
 	},
 
 	show_filter: function() {
+		var a = $X('id("nav")/a[1]')[0];
+		if (!a) return;
+
 		var current = (/^\/show\/([^\/]+)/.exec(location.pathname) || [])[1] || 'dashboard';
 		var filters = ['Dashboard', 'Text', 'Photos', 'Quotes', 'Links', 'Chats', 'Audio', 'Videos'];
 
@@ -153,7 +155,6 @@ var TumblrLife = {
 		}, false);
 		document.getElementById('header').appendChild(ul);
 
-		var a = $X('id("nav")/a[1]')[0];
 		a.addEventListener('mouseover', function() {
 			var style = ul.style;
 			style.right   = (190 + 450 - a.offsetLeft - a.offsetWidth)+'px';

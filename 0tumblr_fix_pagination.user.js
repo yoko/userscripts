@@ -3,7 +3,7 @@
 // @description   Fixes Prev/Next links in Tumblr except for Dashboard page.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.1
+// @version       0.1.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -11,7 +11,10 @@
 // ==/UserScript==
 
 new function() {
-	if (/^(?:\/tumblelog\/[-\w]+)?\/show\/\w+/.test(location.pathname)) {
+	if (
+		$X('id("nav")').length &&
+		(/^(?:\/tumblelog\/[-\w]+)?\/show\/\w+/.test(location.pathname))
+	) {
 		fix_pagination(document, location.href);
 		setTimeout(function() {
 			if (window.AutoPagerize && window.AutoPagerize.addDocumentFilter)
