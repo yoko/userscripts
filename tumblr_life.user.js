@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5
+// @version       0.5.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -65,8 +65,10 @@ var TumblrLife = {
 			return;
 		}
 
+		this.show_filter();
+
 		var posts = $X('id("posts")')[0];
-		if (!posts) return;
+		if (!posts || !(TumblrLife.sessionBookmark || TumblrLife.ReblogMenu.supported)) return;
 
 		posts.addEventListener('DOMNodeInserted', this.setup_handler, false);
 		var li = $X('./li[starts-with(@id, "post")]', posts);
@@ -77,7 +79,16 @@ var TumblrLife = {
 		TumblrLife.sessionBookmark.save_session(li[0]);
 		TumblrLife.minibuffer.setup();
 
-		this.show_filter();
+		TumblrLife.show_shortcut_key_help();
+	},
+
+	setup_handler: function(e) {
+		var target = e.target;
+		var tag = target.localName;
+		if (tag == 'li' && target.id && target.id != 'new_post') {
+			new TumblrLife.ReblogMenu(target);
+			TumblrLife.sessionBookmark.check(target);
+		}
 	},
 
 	load_config: function() {
@@ -122,15 +133,6 @@ var TumblrLife = {
 		$X('id("content")/form/div')[0].appendChild(div);
 	},
 
-	setup_handler: function(e) {
-		var target = e.target;
-		var tag = target.localName;
-		if (tag == 'li' && target.id && target.id != 'new_post') {
-			new TumblrLife.ReblogMenu(target);
-			TumblrLife.sessionBookmark.check(target);
-		}
-	},
-
 	show_filter: function() {
 		var current = (/^\/show\/([^\/]+)/.exec(location.pathname) || [])[1] || 'dashboard';
 		var filters = ['Dashboard', 'Text', 'Photos', 'Quotes', 'Links', 'Chats', 'Audio', 'Videos'];
@@ -159,8 +161,39 @@ var TumblrLife = {
 		}, false);
 	},
 
+	show_shortcut_key_help: function() {
+		if (!(TumblrLife.minibuffer.supported && (TumblrLife.ReblogMenu.supported || TumblrLife.sessionBookmark.supported))) return;
+
+		var div = document.createElement('div');
+		div.id = 'tumblr-life-shortcut-key-help';
+		div.className = 'dashboard_nav_item';
+		div.style.paddingLeft = 0;
+		div.style.position    = 'relative';
+		var help = [];
+		if (TumblrLife.ReblogMenu.supported)
+			help.push([
+				'<li><kbd>r</kbd>reblog</li>',
+				'<li><kbd>q</kbd>add to queue</li>',
+				'<li><kbd>w</kbd>private</li>',
+				'<li><kbd>e</kbd>reblog manually</li>',
+				'<li><kbd>a</kbd>like, unlike</li>'
+			].join(''));
+		if (TumblrLife.sessionBookmark.supported)
+			help.push([
+				'<li><kbd>z</kbd>bookmark</li>',
+				'<li><kbd>x</kbd>bookmark and restore last session</li>'
+			].join(''));
+		div.innerHTML = [
+			'<div class="dashboard_nav_title">Shortcut Keys</div>',
+			'<ul class="dashboard_subpages">',
+			help.join(''),
+			'</ul>'
+		].join('');
+		$X('id("right_column")')[0].appendChild(div);
+	},
+
 	id: function(id) {
-		return id.replace('post', '');
+		return id.replace('post_', '');
 	},
 
 	log: function(text) {
@@ -174,6 +207,8 @@ TumblrLife.sessionBookmark = {
 	data : null,
 	page : null,
 
+	supported: /^\/(?:dashboard|show\/[^\/]+)\/?$/.test(location.pathname),
+
 	setup: function() {
 		var page = /^\/(?:(dashboard)|(show\/[^\/]+)(?:\/\d+)?)$/.exec(location.pathname);
 		if (!page) return;
@@ -184,7 +219,7 @@ TumblrLife.sessionBookmark = {
 	},
 
 	save_session: function(entry) {
-		if (!(/^\/(?:dashboard|show\/[^\/]+)\/?$/.test(location.pathname))) return;
+		if (!TumblrLife.sessionBookmark.supported) return;
 		var id = entry.id;
 		if (id)
 			this.save(id);
@@ -304,156 +339,163 @@ TumblrLife.sessionBookmark = {
 TumblrLife.minibuffer = {
 	reblogging: {},
 
+	supported: !!window.Minibuffer,
+
 	setup: function() {
-		if (!window.Minibuffer) return;
+		if (!TumblrLife.minibuffer.supported) return;
 
-		this.show_shortcut_key_help();
+		if (TumblrLife.ReblogMenu.supported) {
+			window.Minibuffer.addShortcutkey({
+				key        : 'a',
+				description: 'Like',
+				command    : function() {
+					window.Minibuffer.execute('pinned-or-current-node | like | clear-pin');
+				}
+			});
+			window.Minibuffer.addShortcutkey({
+				key        : 'r',
+				description: 'Reblog',
+				command    : function() {
+					window.Minibuffer.execute('pinned-or-current-node | reblog | clear-pin');
+				}
+			});
+			window.Minibuffer.addShortcutkey({
+				key        : 'q',
+				description: 'Reblog add to queue',
+				command    : function() {
+					window.Minibuffer.execute('pinned-or-current-node | reblog -q | clear-pin');
+				}
+			});
+			window.Minibuffer.addShortcutkey({
+				key        : 'w',
+				description: 'Reblog private',
+				command    : function() {
+					window.Minibuffer.execute('pinned-or-current-node | reblog -p | clear-pin');
+				}
+			});
+			window.Minibuffer.addShortcutkey({
+				key        : 'e',
+				description: 'Reblog manually',
+				command    : function() {
+					window.Minibuffer.execute('pinned-or-current-node | reblog -m | clear-pin');
+				}
+			});
 
-		window.Minibuffer.addShortcutkey({
-			key        : 'a',
-			description: 'Like',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | like | clear-pin');
-			}
-		});
-		window.Minibuffer.addShortcutkey({
-			key        : 'z',
-			description: 'Bookmark',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | bookmark | clear-pin');
-			}
-		});
-		window.Minibuffer.addShortcutkey({
-			key        : 'x',
-			description: 'Restore',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | restore | clear-pin');
-			}
-		});
-		window.Minibuffer.addShortcutkey({
-			key        : 'r',
-			description: 'Reblog',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | reblog | clear-pin');
-			}
-		});
-		window.Minibuffer.addShortcutkey({
-			key        : 'q',
-			description: 'Reblog add to queue',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | reblog -q | clear-pin');
-			}
-		});
-		window.Minibuffer.addShortcutkey({
-			key        : 'w',
-			description: 'Reblog private',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | reblog -p | clear-pin');
-			}
-		});
-		window.Minibuffer.addShortcutkey({
-			key        : 'e',
-			description: 'Reblog manually',
-			command    : function() {
-				window.Minibuffer.execute('pinned-or-current-node | reblog -m | clear-pin');
-			}
-		});
-		window.Minibuffer.addCommand({
-			name   : 'like',
-			command: function(stdin) {
-				var entries = stdin, entry;
-				if (!stdin.length) {
-					entry = window.Minibuffer.execute('current-node');
-					if (entry) entries.push(entry);
-					else return stdin;
-				}
-				entries.forEach(function(entry) {
-					var buttons = $X('.//input[contains(@class, "like_button")]', entry);
-					for (var i = 0, button; button = buttons[i]; ++i) {
-						if (!button.clientWidth) continue;
-						click(button);
-						window.Minibuffer.status('like'+entry.id, button.title+'d', 100);
-						break;
+			window.Minibuffer.addCommand({
+				name   : 'like',
+				command: function(stdin) {
+					var entries = stdin, entry;
+					if (!stdin.length) {
+						entry = window.Minibuffer.execute('current-node');
+						if (entry) entries.push(entry);
+						else return stdin;
 					}
-				});
-				return stdin;
-			}
-		});
-		window.Minibuffer.addCommand({
-			name   : 'bookmark',
-			command: function(stdin) {
-				var entries = stdin;
-				if (!stdin.length) {
-					var entry = window.Minibuffer.execute('current-node');
-					if (entry) entries.push(entry);
-					else return stdin;
-				}
-				entries.forEach(function(entry) {
-					var id = entry.id;
-					if (TumblrLife.sessionBookmark.save(id)) {
-						($X('.//li[text()="bookmark"]', entry)[0] || {}).innerHTML = 'bookmarked';
-						window.Minibuffer.status('bookmark'+id, 'Bookmarked', 100);
-					}
-				});
-				return stdin;
-			}
-		});
-		window.Minibuffer.addCommand({
-			name   : 'restore',
-			command: function(stdin) {
-				var entries = stdin, entry;
-				if (!stdin.length) {
-					entry = window.Minibuffer.execute('current-node');
-					if (entry) entries.push(entry);
-					else return stdin;
-				}
-				entry = entries.pop();
-				var id = entry.id;
-				var session_bookmark = TumblrLife.sessionBookmark;
-				if (session_bookmark.save(id)) {
-					window.Minibuffer.status('restore'+id, 'Reloading...');
-					session_bookmark.reload(id);
-				}
-				return stdin;
-			}
-		});
-		window.Minibuffer.addCommand({
-			name   : 'reblog',
-			command: function(stdin) {
-				var args = this.args;
-				var entries = stdin;
-				if (!stdin.length) {
-					var entry = window.Minibuffer.execute('current-node');
-					if (entry) entries.push(entry);
-					else return stdin;
-				}
-				entries.forEach(function(entry) {
-					var item;
-					switch (args[0]) {
-						case '-q':
-							item = $X('.//li[@class="tumblr-life-add-to-queue"]', entry)[0];
+					entries.forEach(function(entry) {
+						var buttons = $X('.//input[contains(@class, "like_button")]', entry);
+						for (var i = 0, button; button = buttons[i]; ++i) {
+							if (!button.clientWidth) continue;
+							click(button);
+							window.Minibuffer.status('like'+entry.id, button.title+'d', 100);
 							break;
-						case '-p':
-							item = $X('.//li[@class="tumblr-life-private"]', entry)[0];
-							break;
-						case '-m':
-							item = $X('.//a[@class="tumblr-life-reblog-manually"]', entry)[0];
-							break;
-						default:
-							item = $X('.//div[@class="tumblr-life-item"]/a[text()="reblog"]', entry)[0];
-					}
-					if (item) {
-						if (args[0] != '-m') {
-							var id = entry.id;
-							TumblrLife.minibuffer.reblogging[id] = true;
-							window.Minibuffer.status('reblog'+id, 'Reblogging...');
 						}
-						click(item);
+					});
+					return stdin;
+				}
+			});
+			window.Minibuffer.addCommand({
+				name   : 'reblog',
+				command: function(stdin) {
+					var args = this.args;
+					var entries = stdin;
+					if (!stdin.length) {
+						var entry = window.Minibuffer.execute('current-node');
+						if (entry) entries.push(entry);
+						else return stdin;
 					}
-				});
-				return stdin;
-			}
-		});
+					entries.forEach(function(entry) {
+						var item;
+						switch (args[0]) {
+							case '-q':
+								item = $X('.//li[@class="tumblr-life-add-to-queue"]', entry)[0];
+								break;
+							case '-p':
+								item = $X('.//li[@class="tumblr-life-private"]', entry)[0];
+								break;
+							case '-m':
+								item = $X('.//a[@class="tumblr-life-reblog-manually"]', entry)[0];
+								break;
+							default:
+								item = $X('.//div[@class="tumblr-life-item"]/a[text()="reblog"]', entry)[0];
+						}
+						if (item) {
+							if (args[0] != '-m') {
+								var id = entry.id;
+								TumblrLife.minibuffer.reblogging[id] = true;
+								window.Minibuffer.status('reblog'+id, 'Reblogging...');
+							}
+							click(item);
+						}
+					});
+					return stdin;
+				}
+			});
+		}
+
+		if (TumblrLife.sessionBookmark.supported) {
+			window.Minibuffer.addShortcutkey({
+				key        : 'z',
+				description: 'Bookmark',
+				command    : function() {
+					window.Minibuffer.execute('pinned-or-current-node | bookmark | clear-pin');
+				}
+			});
+			window.Minibuffer.addShortcutkey({
+				key        : 'x',
+				description: 'Restore',
+				command    : function() {
+					window.Minibuffer.execute('pinned-or-current-node | restore | clear-pin');
+				}
+			});
+
+			window.Minibuffer.addCommand({
+				name   : 'bookmark',
+				command: function(stdin) {
+					var entries = stdin;
+					if (!stdin.length) {
+						var entry = window.Minibuffer.execute('current-node');
+						if (entry) entries.push(entry);
+						else return stdin;
+					}
+					entries.forEach(function(entry) {
+						var id = entry.id;
+						if (TumblrLife.sessionBookmark.save(id)) {
+							($X('.//li[text()="bookmark"]', entry)[0] || {}).innerHTML = 'bookmarked';
+							window.Minibuffer.status('bookmark'+id, 'Bookmarked', 100);
+						}
+					});
+					return stdin;
+				}
+			});
+			window.Minibuffer.addCommand({
+				name   : 'restore',
+				command: function(stdin) {
+					var entries = stdin, entry;
+					if (!stdin.length) {
+						entry = window.Minibuffer.execute('current-node');
+						if (entry) entries.push(entry);
+						else return stdin;
+					}
+					entry = entries.pop();
+					var id = entry.id;
+					var session_bookmark = TumblrLife.sessionBookmark;
+					if (session_bookmark.save(id)) {
+						window.Minibuffer.status('restore'+id, 'Reloading...');
+						session_bookmark.reload(id);
+					}
+					return stdin;
+				}
+			});
+		}
 	},
 
 	complete: function(id) {
@@ -462,27 +504,6 @@ TumblrLife.minibuffer = {
 			window.Minibuffer.status('reblog'+id, 'Reblogged', 100);
 			delete reblogging[id];
 		}
-	},
-
-	show_shortcut_key_help: function() {
-		var div = document.createElement('div');
-		div.id = 'tumblr-life-shortcut-key-help';
-		div.className = 'dashboard_nav_item';
-		div.style.paddingLeft = 0;
-		div.style.position    = 'relative';
-		div.innerHTML = [
-			'<div class="dashboard_nav_title">Shortcut Keys</div>',
-			'<ul class="dashboard_subpages">',
-			'<li><kbd>r</kbd>reblog</li>',
-			'<li><kbd>q</kbd>add to queue</li>',
-			'<li><kbd>w</kbd>private</li>',
-			'<li><kbd>e</kbd>reblog manually</li>',
-			'<li><kbd>a</kbd>like, unlike</li>',
-			'<li><kbd>z</kbd>bookmark</li>',
-			'<li><kbd>x</kbd>bookmark and restore last session</li>',
-			'</ul>'
-		].join('');
-		$X('id("right_column")')[0].appendChild(div);
 	}
 };
 
@@ -492,6 +513,8 @@ TumblrLife.ReblogMenu = function(container) {
 	this.id = TumblrLife.id(container.id);
 	this.show();
 };
+
+TumblrLife.ReblogMenu.supported = /^\/(?:dashboard|likes|show\/[^\/]+)\/?$/.test(location.pathname);
 
 TumblrLife.ReblogMenu.prototype = {
 	reblogging  : false,
@@ -548,7 +571,7 @@ TumblrLife.ReblogMenu.prototype = {
 			'<li><a href="'+this.label.href+'" target="_blank" class="tumblr-life-reblog-manually">reblog manually</a></li>',
 			'<li>bookmark</li>',
 			'<ul class="option">',
-			'<li><input type="text" value="" placeholder="tags" class="tumblr-life-tags"/></li>',
+			'<li><input type="text" value="" placeholder="tags" class="tumblr-life-tags" onkeydown="event.stopPropagation()"/></li>',
 			twitter,
 			'</ul>'
 		].join('');
