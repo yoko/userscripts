@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5.3
+// @version       0.5.4
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -53,7 +53,8 @@ GM_addStyle([
 
 
 var TumblrLife = {
-	config: null,
+	version: '0.5.4',
+	config : null,
 
 	setup: function() {
 		var self = this;
@@ -123,6 +124,16 @@ var TumblrLife = {
 			'<tr>',
 			'<td valign="top"><input id="tumblr-life-config-trim-reblog-info" type="checkbox"'+trim_reblog_info+' style="margin-right:5px;"/></td>',
 			'<td valign="top"><label for="tumblr-life-config-trim-reblog-info">Trim reblog info</label></td>',
+			'</tr>',
+			'<tr>',
+			'<tr><td colspan="2" height="15"></td></tr>',
+			'<td></td>',
+			'<td valign="top">',
+			'<p style="margin:1px 0 0 0; font:normal 11px \'Lucida Grande\',Arial,sans-serif; color:#777;">',
+			'Tumblr Life '+TumblrLife.version+' &copy; 2009- <a href="http://twitter.com/yksk">@yksk</a><br>',
+			'<a href="http://userscripts.org/scripts/discuss/59330">Report problem</a>',
+			'</p>',
+			'</td>',
 			'</tr>',
 			'</tbody>',
 			'</table>',
@@ -208,10 +219,10 @@ TumblrLife.sessionBookmark = {
 	data : null,
 	page : null,
 
-	supported: /^\/(?:dashboard|show\/[^\/]+)\/?$/.test(location.pathname),
+	supported: /^\/(?:dashboard|show\/[^\/]+)\/?/.test(location.pathname),
 
 	setup: function() {
-		var page = /^\/(?:(dashboard)|(show\/[^\/]+)(?:\/\d+)?)$/.exec(location.pathname);
+		var page = /^\/(?:(dashboard)|(show\/[^\/]+)(?:\/\d+)?)/.exec(location.pathname);
 		if (!page) return;
 		this.page = page[1] || page[2];
 		TumblrLife.log('session: '+this.page);
@@ -392,12 +403,14 @@ TumblrLife.minibuffer = {
 						else return stdin;
 					}
 					entries.forEach(function(entry) {
-						var buttons = $X('.//input[contains(@class, "like_button")]', entry);
-						for (var i = 0, button; button = buttons[i]; ++i) {
-							if (!button.clientWidth) continue;
-							click(button);
-							window.Minibuffer.status('like'+entry.id, button.title+'d', 100);
-							break;
+						var a = $X('.//a[contains(@class, "like_button")]', entry)[0],
+							status;
+						if (a) {
+							click(a);
+							status = (a.className.indexOf('already_like') == -1) ?
+								'Unliked' :
+								'Liked';
+							window.Minibuffer.status('like'+entry.id, status, 100);
 						}
 					});
 					return stdin;
@@ -515,7 +528,7 @@ TumblrLife.ReblogMenu = function(container) {
 	this.show();
 };
 
-TumblrLife.ReblogMenu.supported = /^\/(?:dashboard|likes|show\/[^\/]+)\/?$/.test(location.pathname);
+TumblrLife.ReblogMenu.supported = /^\/(?:dashboard|likes|show\/[^\/]+)\/?/.test(location.pathname);
 
 TumblrLife.ReblogMenu.prototype = {
 	reblogging  : false,
