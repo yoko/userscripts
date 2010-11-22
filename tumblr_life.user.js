@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5.4
+// @version       0.5.5
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -53,7 +53,7 @@ GM_addStyle([
 
 
 var TumblrLife = {
-	version: '0.5.4',
+	version: '0.5.5',
 	config : null,
 
 	setup: function() {
@@ -446,8 +446,10 @@ TumblrLife.minibuffer = {
 								var id = entry.id;
 								TumblrLife.minibuffer.reblogging[id] = true;
 								window.Minibuffer.status('reblog'+id, 'Reblogging...');
+								click(item);
 							}
-							click(item);
+							else // Firefox
+								window.open(item.href);
 						}
 					});
 					return stdin;
