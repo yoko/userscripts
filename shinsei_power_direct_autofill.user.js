@@ -24,6 +24,10 @@ var security_card_table = [
 ];
 
 
+if (document.title != 'ログインスクリーン') {
+	return;
+}
+
 $X('id("securitykeyboard")')[0].checked = false;
 
 try {
