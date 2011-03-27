@@ -2,7 +2,7 @@
 // @name          Skip Redirector
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       *
-// @version       1.1.2
+// @version       1.1.3
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
