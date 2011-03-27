@@ -51,7 +51,7 @@ try {
 }
 catch (e) {
 	alert([
-		'[Shinsei Power Redirect] Oops! Probably HTML has changed.',
+		'[Shinsei Power Direct AutoFill] Oops! Probably HTML has changed.',
 		'',
 		e
 	].join('\n'));
