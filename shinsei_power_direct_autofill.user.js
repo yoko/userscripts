@@ -2,8 +2,7 @@
 // @name          Shinsei Power Direct AutoFill
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       https://direct*.shinseibank.co.jp/FLEXCUBEAt/LiveConnect.dll*
-// @include       https://direct*.shinseibank.co.jp/IbsJsps/ibloginnew1.jsp*
-// @version       0.1
+// @version       0.1.1
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -70,4 +69,4 @@ function $X (exp, context, resolver, result_type) {
 	return res;
 }
 
-})(unsafeWindow || document);
+})(this.unsafeWindow || document);
