@@ -3,7 +3,7 @@
 // @description   Extends Tumblr dashboard: Adds quick reblog buttons, shortcut keys (requires Minibuffer and LDRize) and session bookmarks.
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       0.5.5
+// @version       0.5.6
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -13,13 +13,6 @@
 new function() {
 
 if (typeof unsafeWindow == 'undefined') unsafeWindow = window;
-
-// prototype.js breakes native JSON
-if (String.prototype.evalJSON && Object.toJSON)
-	unsafeWindow.JSON = {
-		parse: function(str) { return str.evalJSON(); },
-		stringify: function(obj) { return Object.toJSON(obj); }
-	};
 
 
 GM_addStyle([
@@ -53,7 +46,7 @@ GM_addStyle([
 
 
 var TumblrLife = {
-	version: '0.5.5',
+	version: '0.5.6',
 	config : null,
 
 	setup: function() {
@@ -768,7 +761,7 @@ TumblrLife.ReblogMenu.prototype = {
 	param: function(html, filter) {
 		var self = this;
 		var param_list = $X(
-			'id("edit_post")//*[name()="input" or name()="textarea" or name()="select"]',
+			'id("edit_post")//*[self::input or self::textarea or self::select]',
 			createDocumentFromString(html)
 		);
 		var q = [];
