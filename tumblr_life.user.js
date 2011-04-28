@@ -3,7 +3,7 @@
 // @description   Extends Tumblr Dashboard
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       1.0 Pre
+// @version       1.0 Pre 2
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -113,15 +113,11 @@ var shortcuts = {
 };
 
 function handleEvent(e) {
-	console.log(e, e.type);
 	switch (e.type) {
 	case 'keydown':
 		if (!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey) {
-			var which = e.which;
-			// console.log('keydown', e, this, e.which);
-
-			var command = shortcuts[e.which];
-			console.log(command, shortcuts, e.which);
+			var which = e.which,
+				command = shortcuts[e.which];
 			command && tumblrLife[command](e);
 		}
 		break;
@@ -375,7 +371,6 @@ function menuInitialize(container) {
 }
 
 function menuHandleEvent(e) {
-	console.log(e);
 	if (e.target.localName == 'input') {
 		return;
 	}
@@ -560,7 +555,6 @@ function ajax(method, url, data, onload, onerror) {
 	xhr.open(method, url, true);
 	xhr.onload = onload;
 	xhr.onerror = onerror;
-	console.log(method, method == 'POST');
 	if (method == 'POST') {
 		xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
 	}
