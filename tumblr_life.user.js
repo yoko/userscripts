@@ -74,6 +74,7 @@ var tumblrLife = {
 	reblogPrivate   : reblogPrivate,
 	reblogDraft     : reblogDraft,
 	reblogManually  : reblogManually,
+	publish         : publish,
 	showShortcutHelp: showShortcutHelp
 };
 
@@ -117,7 +118,8 @@ var shortcuts = {
 	/* Q */ 81: 'reblogAddToQueue',
 	/* W */ 87: 'reblogPrivate',
 	/* D */ 68: 'reblogDraft',
-	/* E */ 69: 'reblogManually'
+	/* E */ 69: 'reblogManually',
+	/* P */ 80: 'publish'
 };
 
 function handleEvent(e) {
@@ -187,7 +189,8 @@ function showShortcutHelp() {
 			'<li><kbd>Q</kbd>add to queue</li>',
 			'<li><kbd>W</kbd>private</li>',
 			'<li><kbd>D</kbd>save as draft</li>',
-			'<li><kbd>E</kbd>reblog manually</li>'
+			'<li><kbd>E</kbd>reblog manually</li>',
+			'<li><kbd>P</kbd>publish</li>'
 		];
 		div.innerHTML = [
 			'<div class="dashboard_nav_title">Shortcut Keys</div>',
@@ -225,6 +228,10 @@ function reblogManually() {
 	(function(a) {
 		if (a && a.href) w.open(a.href)
 	})(this.currentPost.querySelector('a.tumblrlife-reblog-manually'));
+}
+
+function publish() {
+	click(this.currentPost.querySelector('a.tumblrlife-assort-publish'));
 }
 
 
@@ -375,6 +382,7 @@ tumblrLife.Menu.prototype = {
 	handleEvent    : menuHandleEvent,
 	append         : menuAppend,
 	reblog         : menuReblog,
+	assort         : menuAssort,
 	reblogFail     : menuReblogFail,
 	query          : menuQuery
 };
@@ -396,10 +404,14 @@ function menuHandleEvent(e) {
 			e.preventDefault();
 		}
 		else {
-			var state = e.target.className.slice(18);
+			var cmd = e.target.className.split('-');
+			if (cmd.shift() != 'tumblrlife') break;
+			var mode = cmd.shift();
+			var state = cmd.join('-');
 			if (state != 'manually') {
 				e.preventDefault();
-				this.reblog(state);
+				if (mode == 'reblog' || mode == 'assort')
+					this[mode](state, e.target);
 			}
 		}
 		break;
@@ -419,6 +431,10 @@ var menu_template_menu = [
 ].join('');
 
 function menuAppend() {
+	menuAppendDsbd.apply(this) || menuAppendOther.apply(this);
+}
+
+function menuAppendDsbd() {
 	var original = this.reblogContainer = this.container.querySelector('div.post_controls > a[href^="/reblog/"]'),
 		container, div;
 	if (original) {
@@ -436,6 +452,24 @@ function menuAppend() {
 		original.parentNode.insertBefore(container, original);
 		container.insertBefore(original, div);
 		original.className = 'tumblrlife-reblog';
+	}
+	return original;
+}
+
+function menuAppendOther() {	// drafts, queue
+	var ctrls = this.reblogContainer = this.container.querySelectorAll(
+			'div.post_controls > a');
+	if (!ctrls) return;
+	var id = this.id;
+	for(var i = 0; i < ctrls.length; i++) {
+		if (!ctrls[i]) continue;
+		switch (ctrls[i].textContent.toLowerCase()) {
+		case 'publish':
+			ctrls[i].onclick = undefined;
+			ctrls[i].className = 'tumblrlife-assort-publish';
+			ctrls[i].addEventListener('click', this, false);
+			break;
+		}
 	}
 }
 
@@ -523,6 +557,29 @@ function menuQuery(html, state) {
 	trimReblogInfo(queries);
 
 	return queries;
+}
+
+function menuAssort(state, e) {
+	var self = this,
+		fail = function() { return self.reblogFail.apply(self) };
+	if (this.reblogging) {
+		return;
+	}
+	this.reblogging = true;
+	e.innerHTML = 'processing...';
+	var assort_form = document.getElementById(state + '_post_' + this.id);
+	var query = {}, i, fe;
+	for (i = 0; fe = assort_form.elements[i]; ++i) {
+		query[fe.name] = fe.value;
+	}
+	post(assort_form.action, query,
+		function(data) {
+			var id = self.id;
+			self.reblogging = false;
+			self.container.parentNode.removeChild(self.container);
+		},
+		fail
+	);
 }
 
 
