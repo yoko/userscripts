@@ -72,6 +72,7 @@ var tumblrLife = {
 	like            : like,
 	reblogAddToQueue: reblogAddToQueue,
 	reblogPrivate   : reblogPrivate,
+	reblogDraft     : reblogDraft,
 	reblogManually  : reblogManually,
 	showShortcutHelp: showShortcutHelp
 };
@@ -115,6 +116,7 @@ var shortcuts = {
 	/* A */ 65: 'like',
 	/* Q */ 81: 'reblogAddToQueue',
 	/* W */ 87: 'reblogPrivate',
+	/* D */ 68: 'reblogDraft',
 	/* E */ 69: 'reblogManually'
 };
 
@@ -184,6 +186,7 @@ function showShortcutHelp() {
 			'<li><kbd>A</kbd>like, unlike</li>',
 			'<li><kbd>Q</kbd>add to queue</li>',
 			'<li><kbd>W</kbd>private</li>',
+			'<li><kbd>D</kbd>save as draft</li>',
 			'<li><kbd>E</kbd>reblog manually</li>'
 		];
 		div.innerHTML = [
@@ -211,6 +214,10 @@ function reblogAddToQueue() {
 
 function reblogPrivate() {
 	click(this.currentPost.querySelector('li.tumblrlife-reblog-private'));
+}
+
+function reblogDraft() {
+	click(this.currentPost.querySelector('li.tumblrlife-reblog-draft'));
 }
 
 function reblogManually() {
@@ -403,6 +410,7 @@ var menu_template_menu = [
 	'<ul>',
 	'<li class="tumblrlife-reblog-add-to-queue">add to queue</li>',
 	'<li class="tumblrlife-reblog-private">private</li>',
+	'<li class="tumblrlife-reblog-draft">draft</li>',
 	'<li><a href="${href}" target="_blank" class="tumblrlife-reblog-manually">reblog manually</a></li>',
 	'</ul>',
 	'<div>',
@@ -454,7 +462,8 @@ function menuReblog(state) {
 					menu_container.className = 'tumblrlife-menu tumblrlife-reblogged';
 					menu_container.innerHTML = 'reblogged' + (state ? {
 						'add-to-queue': ' (queue)',
-						'private'     : ' (private)'
+						'private'     : ' (private)',
+						'draft'       : ' (draft)'
 					}[state] : '');
 
 					execute('increment_note_count(' + id + ')');
@@ -504,7 +513,8 @@ function menuQuery(html, state) {
 
 	queries['post[state]'] = {
 		'add-to-queue': '2',
-		'private'     : 'private'
+		'private'     : 'private',
+		'draft'       : '1'
 	}[state] || '0';
 
 	queries['post[tags]'] = this.menuContainer.querySelector('input.tumblrlife-tags').value;
