@@ -481,7 +481,16 @@ function menuQuery(html, state) {
 
 	options = createDocumentFromString(html).querySelectorAll('#edit_post input, #edit_post textarea, #edit_post select');
 	for (i = 0; o = options[i]; ++i) {
-		queries[o.name] = o.value;
+		if (o.type) {
+			switch (o.type.toLowerCase()) {
+			case 'checkbox':
+			case 'radio':
+				if (o.checked) queries[o.name] = o.value;
+				break;
+			default:
+				queries[o.name] = o.value;
+			}
+		}
 	}
 
 	queries['post[state]'] = {
