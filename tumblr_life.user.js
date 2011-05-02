@@ -90,6 +90,12 @@ function setup() {
 		this.currentPost = this.postsContainer.querySelector(post_selector);
 		this.paginate = !!d.querySelector('body.with_auto_paginate');
 
+		var sc = d.createElement("script");
+		sc.type = "text/javascript";
+		sc.text = "if (!document.onkeydown) start_observing_key_commands(" +
+			(this.paginate ? "true" : "false") + ")";
+		d.body.appendChild(sc);
+
 		d.addEventListener('keydown', this, false);
 		this.postsContainer.addEventListener('DOMNodeInserted', this, false);
 		this.showShortcutHelp();
