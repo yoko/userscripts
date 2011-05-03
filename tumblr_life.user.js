@@ -189,15 +189,23 @@ function showShortcutHelp() {
 		div.id = 'tumblrlife-shortcut-key-help';
 		div.className = 'dashboard_nav_item';
 
-		var li = [
-			'<li><kbd>R</kbd>reblog</li>',
-			'<li><kbd>A</kbd>like, unlike</li>',
-			'<li><kbd>Q</kbd>add to queue</li>',
-			'<li><kbd>W</kbd>private</li>',
-			'<li><kbd>D</kbd>save as draft</li>',
-			'<li><kbd>E</kbd>reblog manually</li>',
-			'<li><kbd>P</kbd>publish</li>'
-		];
+		var li = [];
+		switch (dashboard_mode()) {
+		case 'dashboard':
+			li.push(
+				'<li><kbd>R</kbd>reblog</li>',
+				'<li><kbd>A</kbd>like, unlike</li>',
+				'<li><kbd>Q</kbd>add to queue</li>',
+				'<li><kbd>W</kbd>private</li>',
+				'<li><kbd>D</kbd>save as draft</li>',
+				'<li><kbd>E</kbd>reblog manually</li>');
+			break;
+		case 'draft':
+		case 'queue':
+			li.push('<li><kbd>P</kbd>publish</li>');
+		}
+		if (!li.length) return;
+
 		div.innerHTML = [
 			'<div class="dashboard_nav_title">Shortcut Keys</div>',
 			'<ul class="dashboard_subpages">',
@@ -206,6 +214,21 @@ function showShortcutHelp() {
 		].join('');
 
 		container.appendChild(div);
+	}
+}
+
+function dashboard_mode() {
+	switch (document.body.id) {
+	case 'dashboard_drafts':
+		return 'draft';
+		break;
+	case 'dashboard_post_queue':
+		return 'queue';
+		break;
+	case 'dashboard_index':
+		return location.pathname.slice(0, 10)  == '/tumblelog'
+			? 'tumblelog' : 'dashboard';
+		break;
 	}
 }
 
