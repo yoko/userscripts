@@ -208,7 +208,10 @@ function reblogPrivate() {
 }
 
 function reblogManually() {
-	click(this.currentPost.querySelector('a.tumblrlife-reblog-manually'));
+//	click(this.currentPost.querySelector('a.tumblrlife-reblog-manually'));
+	(function(a) {
+		if (a && a.href) w.open(a.href)
+	})(this.currentPost.querySelector('a.tumblrlife-reblog-manually'));
 }
 
 
