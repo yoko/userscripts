@@ -204,6 +204,8 @@ function showShortcutHelp() {
 			li.push('<li><kbd>Q</kbd>add to queue</li>');
 		case 'queue':
 			li.push('<li><kbd>P</kbd>publish</li>');
+		case 'tumblelog':
+			li.push('<li><kbd>E</kbd>edit</li>');
 			break;
 		}
 		if (!li.length) return;
@@ -488,7 +490,7 @@ function menuAppendDsbd() {
 	return original;
 }
 
-function menuAppendOther() {	// drafts, queue
+function menuAppendOther() {	// drafts, queue, tumblelog
 	var ctrls = this.reblogContainer = this.container.querySelectorAll(
 			'div.post_controls > a');
 	if (!ctrls) return;
@@ -511,6 +513,10 @@ function menuAppendOther() {	// drafts, queue
 			e.href = ctrls[i].href;
 			e.textContent = ctrls[i].textContent;
 			ctrls[i].parentNode.replaceChild(e, ctrls[i]);
+			break;
+		case 'edit':
+			ctrls[i].className = 'tumblrlife-reblog-manually';
+			ctrls[i].addEventListener('click', this, false);
 			break;
 		}
 	}
