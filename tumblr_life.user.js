@@ -201,8 +201,10 @@ function showShortcutHelp() {
 				'<li><kbd>E</kbd>reblog manually</li>');
 			break;
 		case 'draft':
+			li.push('<li><kbd>Q</kbd>add to queue</li>');
 		case 'queue':
 			li.push('<li><kbd>P</kbd>publish</li>');
+			break;
 		}
 		if (!li.length) return;
 
@@ -241,7 +243,8 @@ function like() {
 }
 
 function reblogAddToQueue() {
-	click(this.currentPost.querySelector('li.tumblrlife-reblog-add-to-queue'));
+	click(this.currentPost.querySelector('li.tumblrlife-reblog-add-to-queue') ||
+      this.currentPost.querySelector('a.tumblrlife-assort-queue'));
 }
 
 function reblogPrivate() {
@@ -496,6 +499,14 @@ function menuAppendOther() {	// drafts, queue
 		case 'publish':
 			var e = d.createElement('a');
 			e.className = 'tumblrlife-assort-publish';
+			e.addEventListener('click', this, false);
+			e.href = ctrls[i].href;
+			e.textContent = ctrls[i].textContent;
+			ctrls[i].parentNode.replaceChild(e, ctrls[i]);
+			break;
+		case 'queue':
+			var e = d.createElement('a');
+			e.className = 'tumblrlife-assort-queue';
 			e.addEventListener('click', this, false);
 			e.href = ctrls[i].href;
 			e.textContent = ctrls[i].textContent;
