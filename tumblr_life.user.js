@@ -78,7 +78,7 @@ var tumblrLife = {
 	like            : like,
 	reblogAddToQueue: reblogAddToQueue,
 	reblogPrivate   : reblogPrivate,
-	reblogDraft     : reblogDraft,
+	reblogDraftOrDelete : reblogDraftOrDelete,
 	reblogManually  : reblogManually,
 	publish         : publish,
 	showShortcutHelp: showShortcutHelp
@@ -123,7 +123,7 @@ var shortcuts = {
 	/* A */ 65: 'like',
 	/* Q */ 81: 'reblogAddToQueue',
 	/* W */ 87: 'reblogPrivate',
-	/* D */ 68: 'reblogDraft',
+	/* D */ 68: 'reblogDraftOrDelete',
 	/* E */ 69: 'reblogManually',
 	/* P */ 80: 'publish'
 };
@@ -205,7 +205,8 @@ function showShortcutHelp() {
 		case 'queue':
 			li.push('<li><kbd>P</kbd>publish</li>');
 		case 'tumblelog':
-			li.push('<li><kbd>E</kbd>edit</li>');
+			li.push('<li><kbd>D</kbd>delete</li>',
+					'<li><kbd>E</kbd>edit</li>');
 			break;
 		}
 		if (!li.length) return;
@@ -253,8 +254,9 @@ function reblogPrivate() {
 	click(this.currentPost.querySelector('li.tumblrlife-reblog-private'));
 }
 
-function reblogDraft() {
-	click(this.currentPost.querySelector('li.tumblrlife-reblog-draft'));
+function reblogDraftOrDelete() {
+	click(this.currentPost.querySelector('li.tumblrlife-reblog-draft') ||
+			this.currentPost.querySelector('a.tumblrlife-assort-delete'));
 }
 
 function reblogManually() {
@@ -442,7 +444,12 @@ function menuHandleEvent(e) {
 			if (cmd.shift() != 'tumblrlife') break;
 			var mode = cmd.shift();
 			var state = cmd.join('-');
-			if (state != 'manually') {
+			if (state == 'delete' && !confirm('Delete this post?')) {
+				e.preventDefault();
+				content_window.focus();
+				break;
+			}
+			else if (state != 'manually') {
 				e.preventDefault();
 				if (mode == 'reblog' || mode == 'assort')
 					this[mode](state, e.target);
@@ -509,6 +516,14 @@ function menuAppendOther() {	// drafts, queue, tumblelog
 		case 'queue':
 			var e = d.createElement('a');
 			e.className = 'tumblrlife-assort-queue';
+			e.addEventListener('click', this, false);
+			e.href = ctrls[i].href;
+			e.textContent = ctrls[i].textContent;
+			ctrls[i].parentNode.replaceChild(e, ctrls[i]);
+			break;
+		case 'delete':
+			var e = d.createElement('a');
+			e.className = 'tumblrlife-assort-delete';
 			e.addEventListener('click', this, false);
 			e.href = ctrls[i].href;
 			e.textContent = ctrls[i].textContent;
