@@ -471,9 +471,12 @@ function menuAppendOther() {	// drafts, queue
 		if (!ctrls[i]) continue;
 		switch (ctrls[i].textContent.toLowerCase()) {
 		case 'publish':
-			ctrls[i].onclick = undefined;
-			ctrls[i].className = 'tumblrlife-assort-publish';
-			ctrls[i].addEventListener('click', this, false);
+			var e = d.createElement('a');
+			e.className = 'tumblrlife-assort-publish';
+			e.addEventListener('click', this, false);
+			e.href = ctrls[i].href;
+			e.textContent = ctrls[i].textContent;
+			ctrls[i].parentNode.replaceChild(e, ctrls[i]);
 			break;
 		}
 	}
