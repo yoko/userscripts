@@ -475,7 +475,7 @@ function menuReblogFail() {
 	this.menuContainer.className = 'tumblrlife-menu';
 	this.reblogContainer.innerHTML = '<span class="tumblrlife-fail">reblog</span>';
 	if (confirm('Reblog failed. Open the reblog page?')) {
-		w.open(this.permalink);
+		w.open(this.postURL);
 	}
 }
 
