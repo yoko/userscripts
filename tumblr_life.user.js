@@ -24,6 +24,12 @@ GM_addStyle([
 	'.tumblrlife-menu.tumblrlife-reblogging > div, .tumblrlife-menu.tumblrlife-reblogged > div { display:none; }',
 	'.tumblrlife-menu.tumblrlife-reblogging a { cursor:text; }',
 	'.tumblrlife-menu.tumblrlife-reblogging a:hover { color:#a8b1ba !important; }',
+	'.tumblrlife-menu-processing { cursor:text; color:#333 !important; }',
+	'.tumblrlife-post-processing { background-color: rgba(255, 255, 255, 0.7) !important; }',
+	'.tumblrlife-post-processing .post_content { opacity: 0.4 !important; }',
+	'.tumblrlife-post-processing .post_controls , .tumblrlife-post-processing .post_controls * , .tumblrlife-post-processing .post_info , .tumblrlife-post-processing .post_info * { color: #777 !important; }',
+	'.tumblrlife-post-processing .arrow { opacity: 0.7 !important; }',
+	'.tumblrlife-post-done .post_content { opacity: 1 !important; }',
 
 	'.tumblrlife-menu ul { margin:0 !important; padding:0; border-bottom:1px solid #d8d6d6; }',
 
@@ -485,6 +491,7 @@ function menuReblog(state) {
 	this.reblogging = true;
 	menu_container.className = 'tumblrlife-menu tumblrlife-reblogging';
 	this.reblogContainer.innerHTML = 'reblogging...';
+	this.container.className += " tumblrlife-post-processing";
 
 	get(this.postURL,
 		function() {
@@ -511,6 +518,7 @@ function menuReblog(state) {
 							menu_container.innerHTML = '<a href="' + container.querySelector('a.permalink').href + '" target="_blank">reblogged</a>';
 						});
 					}
+					self.container.className += " tumblrlife-post-done";
 				},
 				fail
 			);
@@ -526,6 +534,13 @@ function menuReblogFail() {
 	if (confirm('Reblog failed. Open the reblog page?')) {
 		w.open(this.postURL);
 	}
+	this.container.className = (function(c) {
+			var i, a = c.split(' '), r = [];
+			for (i = 0; i < a.length; i++)
+				if (a[i] && a[i] != 'tumblrlife-post-processing')
+					r.push(a[i]);
+			return r.join(' ');
+	})(this.container.className);
 }
 
 function menuQuery(html, state) {
@@ -566,7 +581,9 @@ function menuAssort(state, e) {
 		return;
 	}
 	this.reblogging = true;
+	e.className = 'tumblrlife-menu-processing';
 	e.innerHTML = 'processing...';
+	this.container.className += " tumblrlife-post-processing";
 	var assort_form = document.getElementById(state + '_post_' + this.id);
 	var query = {}, i, fe;
 	for (i = 0; fe = assort_form.elements[i]; ++i) {
