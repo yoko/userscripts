@@ -428,7 +428,7 @@ function menuAppend() {
 function menuReblog(state) {
 	var self = this,
 		menu_container = this.menuContainer,
-		fail = this.reblogFail.bind(this);
+		fail = function() { return self.reblogFail.apply(self) };
 
 	if (this.reblogging) {
 		return;
