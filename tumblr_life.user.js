@@ -146,7 +146,7 @@ function getId(container) {
 }
 
 function getStyle(element, property, to_number) {
-	var style = d.defaultView.getComputedStyle(element);
+	var style = d.defaultView.getComputedStyle(element, "");
 	if (style && property) {
 		style = style[property];
 		to_number && (style = parseFloat(style));
