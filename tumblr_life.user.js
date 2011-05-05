@@ -444,7 +444,11 @@ function menuHandleEvent(e) {
 			if (cmd.shift() != 'tumblrlife') break;
 			var mode = cmd.shift();
 			var state = cmd.join('-');
+			if (mode == 'assort')
+				this.container.className += " tumblrlife-post-processing";
 			if (state == 'delete' && !confirm('Delete this post?')) {
+				this.container.className = removeClassName(
+						this.container.className, 'tumblrlife-post-processing');
 				e.preventDefault();
 				content_window.focus();
 				break;
@@ -592,13 +596,15 @@ function menuReblogFail() {
 	if (confirm('Reblog failed. Open the reblog page?')) {
 		w.open(this.postURL);
 	}
-	this.container.className = (function(c) {
-			var i, a = c.split(' '), r = [];
-			for (i = 0; i < a.length; i++)
-				if (a[i] && a[i] != 'tumblrlife-post-processing')
-					r.push(a[i]);
-			return r.join(' ');
-	})(this.container.className);
+	this.container.className = removeClassName(
+			this.container.className, 'tumblrlife-post-processing');
+}
+
+function removeClassName(src, name) {
+	var i, a = src.split(' '), r = [];
+	for (i = 0; i < a.length; i++)
+		if (a[i] && a[i] != name) r.push(a[i]);
+	return r.join(' ');
 }
 
 function menuQuery(html, state) {
