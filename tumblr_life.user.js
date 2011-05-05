@@ -239,7 +239,8 @@ function fixPagenationSetup() {
 
 					var __process_auto_paginator_response = window._process_auto_paginator_response;
 					window._process_auto_paginator_response = function(transport) {
-						history.replaceState('auto_paginator_response', '', window.next_page);
+						if (window.history && window.history.replaceState)
+							history.replaceState('auto_paginator_response', '', window.next_page);
 
 						__process_auto_paginator_response(transport);
 
@@ -260,7 +261,9 @@ function fixPagenationSetup() {
 		execute(function() {
 			var __process_auto_paginator_response = window._process_auto_paginator_response;
 			window._process_auto_paginator_response = function(transport) {
-				history.replaceState('auto_paginator_response', '', window.next_page);
+				if (window.history && window.history.replaceState)
+					history.replaceState('auto_paginator_response', '',
+						window.next_page);
 
 				__process_auto_paginator_response(transport);
 			};
