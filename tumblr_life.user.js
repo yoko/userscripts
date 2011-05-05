@@ -408,7 +408,7 @@ var menu_template_menu = [
 ].join('');
 
 function menuAppend() {
-	var original = this.reblogContainer = this.container.querySelector('div.post_controls > a[href^="/reblog/"]'),
+	var original = this.reblogContainer = this.container.querySelector('div.post_controls > a[href^="/reblog/"],div.post_controls > a[href^="http://www.tumblr.com/reblog/"]'),
 		container, div;
 	if (original) {
 		this.postURL = original.href;
