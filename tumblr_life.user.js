@@ -162,7 +162,7 @@ function getId(container) {
 }
 
 function getStyle(element, property, to_number) {
-	var style = d.defaultView.getComputedStyle(element);
+	var style = d.defaultView.getComputedStyle(element, "");
 	if (style && property) {
 		style = style[property];
 		to_number && (style = parseFloat(style));
@@ -295,7 +295,8 @@ function fixPagenationSetup() {
 
 					var __process_auto_paginator_response = window._process_auto_paginator_response;
 					window._process_auto_paginator_response = function(transport) {
-						history.replaceState('auto_paginator_response', '', window.next_page);
+						if (window.history && window.history.replaceState)
+							history.replaceState('auto_paginator_response', '', window.next_page);
 
 						__process_auto_paginator_response(transport);
 
@@ -316,7 +317,9 @@ function fixPagenationSetup() {
 		execute(function() {
 			var __process_auto_paginator_response = window._process_auto_paginator_response;
 			window._process_auto_paginator_response = function(transport) {
-				history.replaceState('auto_paginator_response', '', window.next_page);
+				if (window.history && window.history.replaceState)
+					history.replaceState('auto_paginator_response', '',
+						window.next_page);
 
 				__process_auto_paginator_response(transport);
 			};
@@ -480,7 +483,7 @@ function menuAppend() {
 }
 
 function menuAppendDsbd() {
-	var original = this.reblogContainer = this.container.querySelector('div.post_controls > a[href^="/reblog/"]'),
+	var original = this.reblogContainer = this.container.querySelector('div.post_controls > a[href^="/reblog/"],div.post_controls > a[href^="http://www.tumblr.com/reblog/"]'),
 		container, div;
 	if (original) {
 		this.postURL = original.href;
