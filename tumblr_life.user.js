@@ -351,6 +351,7 @@ function appendFilter() {
 	ul.innerHTML = li.join('');
 	target && (ul.style.backgroundColor = getStyle(target, 'backgroundColor'));
 	a.appendChild(ul);
+	a.removeAttribute("href");	// for Firefox3.6
 }
 
 
