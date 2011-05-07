@@ -332,7 +332,9 @@ function fixPagenationProcess(target, url) {
 		path, pagination;
 	if (post) {
 		path = fix_pagenation_show_page.exec(url);
+		if (!path) return;
 		pagination = target.querySelector(next_selector);
+		if (!pagination) return;
 		pagination.href = path[0] + '?offset=' + getId(post);
 	}
 }
@@ -407,6 +409,7 @@ function appendFilter() {
 	ul.innerHTML = li.join('');
 	target && (ul.style.backgroundColor = getStyle(target, 'backgroundColor'));
 	a.appendChild(ul);
+	a.removeAttribute("href");	// for Firefox3.6
 }
 
 
