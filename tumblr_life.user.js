@@ -56,6 +56,10 @@ GM_addStyle([
 	'html:lang(ja) #tumblrlife-filter li a { font-size:14px; }',
 	'#tumblrlife-filter li a:first-child { text-transform: none; }',
 	'#tumblrlife-filter li a.current, #tumblrlife-filter li a:hover { color:inherit !important; }',
+	'.tumblrlife-filter-tumblelog-submenu { display: none; position: absolute; background-color: #1F354C; z-index: 100; margin: 0 4em; padding: 0; }',
+	'.tumblrlife-filter-tumblelog-submenu a { display: block; padding: 0.4em 1.5em; }',
+	'.tumblrlife-filter-tumblelog-submenu li { list-style: none; margin: 0 !important; padding: 0;}',
+	'.tumblrlife-filter-tumblelog:hover .tumblrlife-filter-tumblelog-submenu { display: block; }',
 
 	'#tumblrlife-shortcut-key-help { position:relative !important; padding-left:0 !important; }',
 	'#tumblrlife-shortcut-key-help kbd { margin-right:7px; padding:0 3px; color:#2c4762; background-color:#c0c8d0; border-radius:2px; }'
@@ -387,6 +391,11 @@ filters = ['dashboard', 'text', 'photos', 'quotes', 'links', 'chats', 'audio', '
 current_filter = (/^\/show\/([^\/]+)/.exec(location.pathname) || [])[1] || 'dashboard';
 
 function appendFilter() {
+	appendNavFilter();
+	appendTumblelogFilter();
+}
+
+function appendNavFilter() {
 	var a = d.querySelector('#nav > a');
 	if (!a) {
 		return;
@@ -410,6 +419,27 @@ function appendFilter() {
 	target && (ul.style.backgroundColor = getStyle(target, 'backgroundColor'));
 	a.appendChild(ul);
 	a.removeAttribute("href");	// for Firefox3.6
+}
+
+function appendTumblelogFilter() {
+	var a = d.querySelector(
+			".dashboard_subpages li a[href^=\"/tumblelog/\"]"), p;
+	if (!(p = a.parentNode)) return;
+	p.className += " tumblrlife-filter-tumblelog";
+
+	var current_filter = (/^\/tumblelog\/[^\/]+\/show\/([^\/]+)/.exec(
+			location.pathname) || [])[1] || null;
+	var li = [];
+	for (var i = 0; filter = filters[i]; ++i) {
+		if (filter == 'dashboard') continue;
+		klass = filter == current_filter ? ' class="active"' : '';
+		li[i] = '<li><a href="' + a.href + '/show/' + filter + '"' + klass + '>' + filter + '</a></li>';
+	}
+
+	var ul = d.createElement('ul');
+	ul.innerHTML = li.join('');
+	ul.className = 'tumblrlife-filter-tumblelog-submenu';
+	p.appendChild(ul);
 }
 
 
