@@ -457,7 +457,7 @@ function menuReblog(state) {
 						'private'     : ' (private)'
 					}[state] : '');
 
-					execute('increment_note_count(' + id + ')');
+					execute('increment_note_count(' + id + '); undefined;');
 
 					if (!state) {
 						get('/dashboard', function() {
