@@ -3,7 +3,7 @@
 // @description   Extends Tumblr Dashboard
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       1.0 Pre 3
+// @version       1.0 Pre 4
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -368,7 +368,7 @@ function menuInitialize(container, reblog_container) {
 function menuLink(target) {
 	var reblog_container;
 	if (
-		target.localName == 'li' && getId(target) &&
+		target.nodeName == 'LI' && getId(target) &&
 		(reblog_container = target.querySelector('div.post_controls > a[href*="/reblog/"]'))
 	) {
 		target._tumblrLifeMenu = new tumblrLife.Menu(target, reblog_container);
