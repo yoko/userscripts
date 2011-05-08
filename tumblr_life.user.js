@@ -3,7 +3,7 @@
 // @description   Extends Tumblr Dashboard
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       1.0 Pre 4
+// @version       1.0 Pre 5
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -49,7 +49,8 @@ GM_addStyle([
 	'.tumblrlife-session-bookmark img { margin-right:5px; vertical-align:middle; }',
 	'.tumblrlife-session-bookmark span { padding:0 10px; background-color:#2c4762; }',
 
-	'#tumblrlife-filter { display:none; position:absolute; z-index:100; top:0; left:0; margin:0; padding:0; background-color:#1f354c; }',
+	// '#tumblrlife-filter { display:none; position:absolute; z-index:100; top:0; left:0; margin:0; padding:0; background-color:#1f354c; }',
+	'#tumblrlife-filter.nav_item { display:none; position:absolute; z-index:100; top:0; left:0; margin:0; padding:0; }',
 	'#nav a:hover #tumblrlife-filter { display:block; }',
 	'#tumblrlife-filter li { list-style:none; font-size:16px; text-align:left; }',
 	'#tumblrlife-filter li a { display:block; padding:3px 8px 2px; color:#fff; text-decoration:none; text-transform: capitalize; }',
@@ -297,17 +298,22 @@ function fixPagenationSetup() {
 function fixPagenationProcess(target, url) {
 	var post = target.querySelector(post_selector + ':last-child'),
 		path, pagination;
-	if (post) {
-		path = fix_pagenation_show_page.exec(url);
-		if (!path) return;
-		pagination = target.querySelector(next_selector);
-		if (!pagination) return;
-		pagination.href = path[0] + '?offset=' + getId(post);
+	if (!post) {
+		return;
 	}
+	path = fix_pagenation_show_page.exec(url);
+	if (!path) {
+		return;
+	}
+	pagination = target.querySelector(next_selector);
+	if (!pagination) {
+		return;
+	}
+	pagination.href = path[0] + '?offset=' + getId(post);
 }
 
 function fixPagenationAutoPagerize() {
-	window.AutoPagerize.addDocumentFilter(tumblrLife.fixPagenation.process);
+	w.AutoPagerize.addDocumentFilter(tumblrLife.fixPagenation.process);
 }
 
 
@@ -336,10 +342,11 @@ function appendFilter() {
 
 	ul = d.createElement('ul');
 	ul.id = 'tumblrlife-filter';
+	ul.className = 'nav_item active';
 	ul.innerHTML = li.join('');
-	target && (ul.style.backgroundColor = getStyle(target, 'backgroundColor'));
+	// target && (ul.style.backgroundColor = getStyle(target, 'backgroundColor'));
 	a.appendChild(ul);
-	a.removeAttribute("href");	// for Firefox3.6
+	a.removeAttribute('href');
 }
 
 
