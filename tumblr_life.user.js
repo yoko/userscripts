@@ -605,7 +605,7 @@ function menuReblog(state) {
 						'draft'       : ' (draft)'
 					}[state] : '');
 
-					execute('increment_note_count(' + id + ')');
+					execute('increment_note_count(' + id + '); undefined;');
 
 					if (!state) {
 						get('/dashboard', function() {
