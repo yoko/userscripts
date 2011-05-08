@@ -424,7 +424,7 @@ function appendNavFilter() {
 function appendTumblelogFilter() {
 	var a = d.querySelector(
 			".dashboard_subpages li a[href^=\"/tumblelog/\"]"), p;
-	if (!(p = a.parentNode)) return;
+	if (!(a && (p = a.parentNode))) return;
 	p.className += " tumblrlife-filter-tumblelog";
 
 	var current_filter = (/^\/tumblelog\/[^\/]+\/show\/([^\/]+)/.exec(
