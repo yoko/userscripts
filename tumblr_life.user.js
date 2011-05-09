@@ -3,7 +3,7 @@
 // @description   Extends Tumblr Dashboard
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       1.0 Pre 5
+// @version       1.0 Pre 6
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -59,7 +59,7 @@ GM_addStyle([
 	'#tumblrlife-filter li a.current, #tumblrlife-filter li a:hover { color:inherit !important; }',
 
 	'#tumblrlife-shortcut-key-help { position:relative !important; padding-left:0 !important; }',
-	'#tumblrlife-shortcut-key-help kbd { margin-right:7px; padding:0 3px; color:#2c4762; font-family:Courier,monospace; background-color:#c0c8d0; border-radius:2px; }'
+	'#tumblrlife-shortcut-key-help kbd { margin-right:7px; padding:0 3px; font-family:Courier,monospace; background-color:rgba(255, 255, 255, 0.1); border-radius:2px; }'
 ].join(''));
 
 
@@ -123,13 +123,13 @@ var shortcuts = {
 
 function handleEvent(e) {
 	var target = e.target,
-		local_name = target.localName,
+		node_name = target.nodeName,
 		command,
 		menu;
 	switch (e.type) {
 	case 'keydown':
 		if (
-			local_name != 'input' && local_name != 'textarea' &&
+			node_name != 'INPUT' && node_name != 'TEXTAREA' &&
 			!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey
 		) {
 			command = shortcuts[e.which];
@@ -390,7 +390,7 @@ function menuUnlink(target) {
 }
 
 function menuHandleEvent(e) {
-	if (e.target.localName == 'input') {
+	if (e.target.nodeName == 'INPUT') {
 		return;
 	}
 	switch (e.type) {
