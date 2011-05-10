@@ -14,11 +14,18 @@
 (function(w, content_window, d) {
 
 
-w.GM_addStyle = w.GM_addStyle || function(css) {
+var GM_addStyle = w.GM_addStyle || function(css) {
 	var style = d.createElement('style');
 	style.textContent = css;
 	d.getElementsByTagName('head')[0].appendChild(style);
 };
+
+var greaseKit = (
+	w === content_window &&
+	navigator.userAgent.indexOf('Chrome') == -1 &&
+	navigator.userAgent.indexOf('Safari') != -1
+);
+
 
 GM_addStyle([
 	'.tumblrlife-menu { display:inline; position:relative; margin-left:10px; padding-bottom:5px; }',
@@ -56,13 +63,6 @@ GM_addStyle([
 	'#tumblrlife-shortcut-key-help { position:relative !important; padding-left:0 !important; }',
 	'#tumblrlife-shortcut-key-help kbd { margin-right:7px; padding:0 3px; font-family:Courier,monospace; background-color:rgba(255, 255, 255, 0.1); border-radius:2px; }'
 ].join(''));
-
-
-var greaseKit = (
-	w === content_window &&
-	navigator.userAgent.indexOf('Chrome') == -1 &&
-	navigator.userAgent.indexOf('Safari') != -1
-);
 
 
 var tumblrLife = {
@@ -313,8 +313,8 @@ function fixPagenationProcess(target, url) {
 
 tumblrLife.appendFilter = appendFilter;
 
-filters = ['dashboard', 'text', 'photos', 'quotes', 'links', 'chats', 'audio', 'videos'];
-current_filter = (/^\/show\/([^\/]+)/.exec(location.pathname) || [])[1] || 'dashboard';
+var append_filter_filters = ['dashboard', 'text', 'photos', 'quotes', 'links', 'chats', 'audio', 'videos'],
+	append_filter_current_filter = (/^\/show\/([^\/]+)/.exec(location.pathname) || [])[1] || 'dashboard';
 
 function appendFilter() {
 	var container = d.querySelector('#nav');
@@ -327,9 +327,9 @@ function appendFilter() {
 		ul = d.createElement('ul'),
 		li = [],
 		i = 0, filter, title;
-	for (; filter = filters[i]; ++i) {
+	for (; filter = append_filter_filters[i]; ++i) {
 		href = (filter == 'dashboard' ? '' : 'show/') + filter;
-		klass = filter == current_filter ? ' class="current"' : '';
+		klass = filter == append_filter_current_filter ? ' class="current"' : '';
 		title = filter == 'dashboard' ? a.querySelector('div').innerHTML : filter;
 		li[i] = '<li><a href="/' + href + '"' + klass + '>' + title + '</a></li>';
 	}
