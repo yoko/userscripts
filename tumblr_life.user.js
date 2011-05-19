@@ -3,7 +3,7 @@
 // @description   Extends Tumblr Dashboard
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       1.0 Pre 7
+// @version       1.0 Pre 8
 // @license       MIT License
 // @work          Greasemonkey
 // @work          GreaseKit
@@ -77,7 +77,9 @@ var tumblrLife = {
 	handleEvent     : handleEvent,
 	getId           : getId,
 	eachPost        : eachPost,
-	getPosition     : getPosition,
+	nextPosition    : nextPosition,
+	prevPosition    : prevPosition,
+	findPosition    : findPosition,
 	updatePosition  : updatePosition,
 	next            : next,
 	reblog          : reblog,
@@ -121,8 +123,8 @@ function setup() {
 }
 
 var shortcuts = {
-	/* J */ 74: 'getPosition',
-	/* K */ 75: 'getPosition',
+	/* J */ 74: 'nextPosition',
+	/* K */ 75: 'prevPosition',
 	/* R */ 82: 'reblog',
 	/* A */ 65: 'like',
 	/* Q */ 81: 'reblogAddToQueue',
@@ -146,10 +148,12 @@ function handleEvent(e) {
 			!e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey
 		) {
 			switch (command) {
-			case 'getPosition':
+			case 'nextPosition':
+			case 'prevPosition':
 			case 'like':
 				tumblrLife[command](e);
 				break;
+
 			default:
 				if (tumblrLife.currentPost.className.indexOf('tumblrlife-reblog') == -1) {
 					tumblrLife[command](e);
@@ -180,25 +184,47 @@ function getId(container) {
 	return (post_id.exec(container.id) || [])[1];
 }
 
-function getPosition() {
-	var self = this,
-		y = w.scrollY + post_margin_top,
-		post,
-		position = this.position;
+function nextPosition() {
+	var next = this.position + 1,
+		posts = this.posts,
+		post, a, y;
 
-	post = this.posts[position + 1];
-	if (post && post.offsetTop == y) {
-		this.updatePosition(post, position + 1);
-		return;
+	if (!this.paginate && next >= posts.length) {
+		a = d.getElementById('next_page_link');
+		a && (location.href = a.href);
 	}
-	post = this.posts[position - 1];
-	if (post && post.offsetTop == y) {
-		this.updatePosition(post, position - 1);
-		return;
-	}
+	else {
+		post = posts[next];
+		y = w.scrollY + post_margin_top;
 
-	tumblrLife.eachPost(function(post, i) {
-		if (post.offsetTop == y) {
+		if (post && post.offsetTop == y) {
+			this.updatePosition(post, next);
+		}
+		else {
+			this.findPosition(post, y);
+		}
+	}
+}
+
+function prevPosition() {
+	var prev = this.position - 1,
+		post = this.posts[prev],
+		y = w.scrollY + post_margin_top;
+
+	if (post && post.offsetTop == y) {
+		this.updatePosition(post, prev);
+	}
+	else {
+		this.findPosition(post, y);
+	}
+}
+
+function findPosition(skip_post, y) {
+	var self = this;
+	y = y || w.scrollY + post_margin_top;
+
+	this.eachPost(function(post, i) {
+		if (post !== skip_post && post.offsetTop == y) {
 			self.updatePosition(post, i);
 			return false;
 		}
