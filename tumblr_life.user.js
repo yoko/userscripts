@@ -187,9 +187,15 @@ function getPosition() {
 		position = this.position;
 
 	post = this.posts[position + 1];
-	post && post.offsetTop == y && this.updatePosition(post, position + 1);
+	if (post && post.offsetTop == y) {
+		this.updatePosition(post, position + 1);
+		return;
+	}
 	post = this.posts[position - 1];
-	post && post.offsetTop == y && this.updatePosition(post, position - 1);
+	if (post && post.offsetTop == y) {
+		this.updatePosition(post, position - 1);
+		return;
+	}
 
 	tumblrLife.eachPost(function(post, i) {
 		if (post.offsetTop == y) {
