@@ -15,6 +15,20 @@ new function() {
 	var greasemonkey = (typeof unsafeWindow != 'undefined');
 	var now = +new Date;
 
+    localSITEINFO=[
+       /*
+       {data:{
+          url: '',
+          link:'',
+          replace_url:'',
+          site_url:'',
+          fixme: false,
+          example_url:'',
+       }},
+       */
+    ];
+
+	handler(localSITEINFO);
 	if (greasemonkey)
 		GM_registerMenuCommand('Skip Redirector Clear SITEINFO Cache', save);
 
@@ -73,6 +87,7 @@ new function() {
 				else if (link) {
 					var a = $X(link)[0];
 					if (a) {
+						if(greasemonkey && a.nodeName==='A' && a.href) return location.replace(a.href);
 						var e = document.createEvent('MouseEvent');
 						e.initMouseEvent('click', true, true, window, 0, 0, 0, 0, 0, false, false, false, false, 0, null);
 						a.dispatchEvent(e);
