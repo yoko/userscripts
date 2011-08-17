@@ -450,6 +450,7 @@ var menu_template_menu = [
 function menuAppend() {
 	var original = this.reblogContainer = this.container.querySelector('div.post_controls > a[href*="/reblog/"]'),
 		container, div;
+	if (original == null) return;
 	this.postURL = original.href;
 	container = this.menuContainer = d.createElement('div');
 	container.className = 'tumblrlife-menu';
