@@ -88,7 +88,7 @@ new function() {
 		reblog.onreadystatechange = function() {
 			if (reblog.readyState == 4 && reblog.status == 200) {
 				var p = get_param(reblog.responseText);
-				
+
 				var post = new XMLHttpRequest;
 				post.onreadystatechange = function() {
 					if (post.readyState == 4 && post.status == 200) {
@@ -139,7 +139,7 @@ new function() {
 		           body = doc.getElementsByTagName('body')[0] || doc.createElement('body');
 		while ((child = fragment.firstChild)) {
 			if (
-				(child.nodeType === doc.ELEMENT_NODE && !(child.nodeName.toLowerCase() in headChildNames)) || 
+				(child.nodeType === doc.ELEMENT_NODE && !(child.nodeName.toLowerCase() in headChildNames)) ||
 				(child.nodeType === doc.TEXT_NODE &&/\S/.test(child.nodeValue))
 			   )
 				break;
