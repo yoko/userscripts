@@ -348,7 +348,7 @@ tumblrLife.preference = {
 };
 
 var preference_template = [
-	
+
 ].join('');
 
 function preferenceSetup(name) {
@@ -464,7 +464,7 @@ function appendFilter() {
 // 	setup      : entrySetup,
 // 	handleEvent: entryHandleEvent,
 // 	reblog     : entryReblog
-// 	// like       : 
+// 	// like       :
 // };
 
 function entrySetup() {
@@ -485,16 +485,16 @@ function entryHandleEvent(e) {
 			break;
 
 		case 'delete':
-			
-			
+
+
 			break;
 
 		case 'menu':
 			this.reblog(target, target.className.slice(18));
 			break;
 		}
-		
-		
+
+
 		if (_entryReblogElement(target)) {
 			this.reblog(target);
 		}
@@ -513,17 +513,17 @@ function entryHandleEvent(e) {
 			delete target.onclick;
 			break;
 		}
-		
-		
+
+
 		if (_entryReblogElement(target) && target.href.indexOf('/reblog/') != -1) {
 			this.showMenu(target);
 		}
-		
+
 		break;
 	}
-	
-	
-	
+
+
+
 }
 
 // function _entryElement(target) {

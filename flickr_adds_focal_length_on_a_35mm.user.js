@@ -31,7 +31,7 @@ new function() {
 					text = 'with a full-frame';
 				else {
 					var angleOfView = Math.round(parseFloat(focalLength.textContent) * parseFloat(item.data.ratio));
-					text = angleOfView+' mm on a 35 mm camera'; 
+					text = angleOfView+' mm on a 35 mm camera';
 				}
 				break;
 			}
@@ -56,7 +56,7 @@ new function() {
 
 
 	if (cacheable && typeof GM_registerMenuCommand == 'function')
-		GM_registerMenuCommand('Clear Angle of View Data Cache', save); 
+		GM_registerMenuCommand('Clear Angle of View Data Cache', save);
 
 	var api = uri+'.json';
 	if (cacheable) {
