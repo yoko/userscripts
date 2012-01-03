@@ -52,7 +52,7 @@ GM_addStyle([
 
 	'.tumblrlife-fail { color:#c00; }',
 
-	'#tumblrlife-filter { display:none; position:absolute; z-index:100; top:0; left:0; margin:0; padding:0; }',
+	'#header #tumblrlife-filter { display:none; position:absolute; z-index:100; top:0; left:0; margin:0; padding:0; background-color: #2C4762; }',
 	'#default_tabs > li.tab > div:hover #tumblrlife-filter { display:block; }',
 	'#tumblrlife-filter li { list-style:none; font-size:16px; text-align:left; }',
 	'#tumblrlife-filter li a { display:block; padding:3px 8px 2px; color:#fff; text-decoration:none; text-transform: capitalize; }',
