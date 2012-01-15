@@ -58,7 +58,6 @@ GM_addStyle([
 
 	// z-index:0 にすれば新着通知との順序が狂わない
 	'#tumblrlife-filter { display:none; position:absolute; z-index:0; top:0; margin:0 -10px; padding:4px 0; line-height:28px; text-align:left; background:rgba(0,0,0,.33); border:1px solid rgba(0, 0, 0, .09); border-radius:6px; box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}',
-	'#default_tabs > li { padding-bottom:0; }',
 	'#default_tabs > li > a:hover span[class!="tab_notice"] { visibility:hidden; }',
 	'#default_tabs > li:hover #tumblrlife-filter { display:block; }',
 	'#tumblrlife-filter li { list-style:none; font-size:16px; text-align:left; font-weight:bold; }',
