@@ -26,7 +26,7 @@ GM_addStyle([
 	'.tumblrlife-menu > a { margin-left:0 !important; }',
 	'.tumblrlife-menu:hover:after { display:block; position:absolute; bottom:0; left:50%; width:0; height:0; margin-left:-8px; border-width:8px; border-top-width:0; border-color:#dbe5ee transparent; border-style:solid; content:""; }',
 
-	'.tumblrlife-menu > div { display:none; position:absolute; z-index:100; margin:5px 0 0 -10px !important; font-size:12px; color:#334556; border-radius:3px; box-shadow: 0 6px 6px rgba(0,0,0,0.33); }',
+	'.tumblrlife-menu > div { display:none; position:absolute; z-index:100; top:21px; margin:0 0 0 -10px !important; font-size:12px; color:#334556; border-radius:3px; box-shadow: 0 6px 6px rgba(0,0,0,0.33); }',
 	'.tumblrlife-menu:hover > div { display: block; }',
 
 	'li.post.tumblrlife-reblogging .tumblrlife-menu:hover:after, li.post.tumblrlife-reblogged .tumblrlife-menu:hover:after { display:none; }',
@@ -651,12 +651,10 @@ function menuHandleEvent(e) {
 		if (this.reblogging) {
 			e.preventDefault();
 		}
-		else {
+		else if (e.target.className) {
 			var action = (/^tumblrlife-reblog-(.+)$/.exec(e.target.className) || [])[1];
-			if (action) {
-				e.preventDefault();
-				this.reblog(action);
-			}
+			e.preventDefault();
+			this.reblog(action);
 		}
 		break;
 	}
@@ -692,7 +690,11 @@ function menuAppend() {
 	container.insertBefore(original, div);
 	original.className = 'tumblrlife-reblog';
 
-	div.querySelector('input').focus();
+	// 開いた時に実行しないとダメ
+	// setTimeout(function() {
+	// 	console.log(div.querySelector('input'));
+	// 	div.querySelector('input').focus();
+	// }, 0);
 }
 
 function menuReblog(state) {
