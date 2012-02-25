@@ -37,6 +37,7 @@ GM_addStyle([
 	'.tumblrlife-menu ul { margin:0 !important; padding:0; }',
 	'.tumblrlife-menu li { background-color:#dbe5ee; }',
 	'.tumblrlife-menu li:first-child { border-radius:3px 3px 0 0; }',
+    '.tumblrlife-menu li.tumblrlife-reblog-add-to-channel:before { content:"ch: "; }',
 	'.tumblrlife-menu li, .tumblrlife-menu li a { color:#334556 !important; }',
 	'.tumblrlife-menu li:hover { background-color:#d3dee8; }',
 	// '.tumblrlife-menu li:hover, .tumblrlife-menu li a:hover { color:#7b8994 !important; }',
@@ -653,15 +654,34 @@ function menuHandleEvent(e) {
 		}
 		else if (e.target.className) {
 			var action = (/^tumblrlife-reblog-(.+)$/.exec(e.target.className) || [])[1];
+            var ex = {};
 			e.preventDefault();
-			this.reblog(action);
+            if (action == 'add-to-channel') {
+                ex.channel_id = e.target.innerHTML;
+            }
+            this.reblog(action, ex);
 		}
 		break;
 	}
 }
 
+var channels = (function() {
+    var names = [],
+        objs = document.querySelectorAll('#user_channels > li');
+    for (var i = 0; i < objs.length; ++i) {
+        names.push(objs[i].querySelector('a').href.match(/[^/]+$/)[0]);
+    }
+    return names;
+})();
+
+var menu_channels = channels.slice(1).map(function(channel) {
+    return '<li class="tumblrlife-reblog-add-to-channel">' + channel + '</li>';
+}).join('');
+
+
 var menu_template_menu = [
 	'<ul>',
+    menu_channels,
 	'<li class="tumblrlife-reblog-add-to-queue">add to queue</li>',
 	'<li class="tumblrlife-reblog-private">private</li>',
 	'<li class="tumblrlife-reblog-manually"><a href="${href}" target="_blank">reblog manually</a></li>',
@@ -697,7 +717,7 @@ function menuAppend() {
 	// }, 0);
 }
 
-function menuReblog(state) {
+function menuReblog(state, ex) {
 	var self = this,
 		container = this.container,
 		menu_container = this.menuContainer,
@@ -713,13 +733,14 @@ function menuReblog(state) {
 
 	get(this.postURL,
 		function() {
-			post(self.postURL, self.query(this.responseText, state),
+			post(self.postURL, self.query(this.responseText, state, ex),
 				function(data) {
 					var id = self.id;
 					self.reblogging = false;
 					container.className = container.className.replace('tumblrlife-reblogging', 'tumblrlife-reblogged');
 					menu_container.removeEventListener('click', self, false);
 					menu_container.innerHTML = 'reblogged' + (state ? {
+                        'add-to-channel': ' (ch: ' + ex.channel_id + ')',
 						'add-to-queue': ' (queue)',
 						'private'     : ' (private)'
 					}[state] : '');
@@ -752,7 +773,7 @@ function menuReblogFail() {
 	}
 }
 
-function menuQuery(html, state) {
+function menuQuery(html, state, ex) {
 	var options, queries = {}, i, o;
 
 	options = createDocumentFromString(html).querySelectorAll('#edit_post input, #edit_post textarea, #edit_post select');
@@ -773,6 +794,10 @@ function menuQuery(html, state) {
 		'add-to-queue': '2',
 		'private'     : 'private'
 	}[state] || '0';
+
+    if (ex && ex.channel_id) {
+        queries['channel_id'] = ex.channel_id;
+    }
 
 	queries['post[tags]'] = this.menuContainer.querySelector('input.tumblrlife-tags').value;
 	delete queries['preview_post'];
