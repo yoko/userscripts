@@ -3,7 +3,7 @@
 // @description   Extends Tumblr Dashboard
 // @namespace     http://codefairy.org/ns/userscripts
 // @include       http://www.tumblr.com/*
-// @version       1.0 Pre 8
+// @version       1.0 Pre 9
 // @license       MIT License
 // @work          Greasemonkey
 // @work          Google Chrome
@@ -26,7 +26,7 @@ GM_addStyle([
 	'.tumblrlife-menu > a { margin-left:0 !important; }',
 	'.tumblrlife-menu:hover:after { display:block; position:absolute; bottom:0; left:50%; width:0; height:0; margin-left:-8px; border-width:8px; border-top-width:0; border-color:#dbe5ee transparent; border-style:solid; content:""; }',
 
-	'.tumblrlife-menu > div { display:none; position:absolute; z-index:100; top:21px; margin:0 0 0 -10px !important; font-size:12px; color:#334556; border-radius:3px; box-shadow: 0 6px 6px rgba(0,0,0,0.33); }',
+	'.tumblrlife-menu > div { display:none; position:absolute; z-index:100; top:21px; left:0; margin:0 0 0 -10px !important; font-size:12px; color:#334556; border-radius:3px; box-shadow: 0 6px 6px rgba(0,0,0,0.33); }',
 	'.tumblrlife-menu:hover > div { display: block; }',
 
 	'li.post.tumblrlife-reblogging .tumblrlife-menu:hover:after, li.post.tumblrlife-reblogged .tumblrlife-menu:hover:after { display:none; }',
@@ -52,12 +52,14 @@ GM_addStyle([
 	// 17px : 右カラムのリストとアクションの比率に近いように
 	// 色は投稿ページのタグに合わせる
 	'.tumblrlife-menu div div input { width:120px; height:17px; padding:0; font-size:11px; color:#444; border:none; }',
-	'.tumblrlife-menu input::-webkit-input-placeholder, .tumblrlife-menu input::-moz-placeholder { color:#a6a6a6 !important; }',	
+	'.tumblrlife-menu input::-webkit-input-placeholder { color:#a6a6a6 !important; }',
+	// セレクターを列挙すると効かないので分ける
+	'.tumblrlife-menu input:-moz-placeholder { color:#a6a6a6 !important; }',
 
 	'.tumblrlife-fail { color:#c00; }',
 
-	// z-index:0 にすれば新着通知との順序が狂わない
-	'#tumblrlife-filter { display:none; position:absolute; z-index:0; top:0; margin:0 -10px; padding:4px 0; line-height:28px; text-align:left; background:rgba(0,0,0,.33); border:1px solid rgba(0, 0, 0, .09); border-radius:6px; box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}',
+	'#header .tab .tab_notice { z-index:2; }',
+	'#tumblrlife-filter { display:none; position:absolute; z-index:1; top:0; margin:0 -10px; padding:4px 0; line-height:28px; text-align:left; background:rgba(0,0,0,.33); border:1px solid rgba(0, 0, 0, .09); border-radius:6px; box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}',
 	'#default_tabs > li > a:hover span[class!="tab_notice"] { visibility:hidden; }',
 	'#default_tabs > li:hover #tumblrlife-filter { display:block; }',
 	'#tumblrlife-filter li { list-style:none; font-size:16px; text-align:left; font-weight:bold; }',
@@ -71,8 +73,7 @@ GM_addStyle([
 	'#tumblrlife-shortcut-key-help { margin-top:15px; padding-left:0 !important; background-position:top !important; }',
 	'#tumblrlife-shortcut-key-help kbd { margin-right:7px; padding:0 3px; font-family:Courier,monospace; background-color:rgba(255,255,255,0.1); border-radius:2px; }',
 	'#tumblrlife-shortcut-key-help .dashboard_subpages { margin-top:4px !important; }',
-	'.tumblrlife-shortcut-key-help-default kbd { background-color:rgba(0,0,0,0.1) !important; }',
-	'.tumblrlife-shortcut-key-help-default:last-child { margin-bottom:8px !important; }'
+	'.tumblrlife-shortcut-key-help-default kbd { background-color:rgba(0,0,0,0.1) !important; }'
 ].join(''));
 
 
