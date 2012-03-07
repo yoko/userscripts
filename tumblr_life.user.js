@@ -671,7 +671,7 @@ var menu_template_menu = [
 ].join('');
 
 function menuAppend() {
-	var original = this.reblogContainer = this.container.querySelector('div.post_controls > a[href*="/reblog/"]'),
+	var original = this.reblogContainer = this.container.querySelector('.reblog_button'),
 		container, div;
 	if (original == null) return;
 	this.postURL = original.href;
@@ -687,7 +687,7 @@ function menuAppend() {
 	container.appendChild(div);
 	original.parentNode.insertBefore(container, original);
 	container.insertBefore(original, div);
-	original.className = 'tumblrlife-reblog';
+	original.className += ' tumblrlife-reblog';
 
 	// 開いた時に実行しないとダメ
 	// setTimeout(function() {
