@@ -60,12 +60,10 @@ GM_addStyle([
 
 	'#header .tab .tab_notice { z-index:2; }',
 	'#tumblrlife-filter { display:none; position:absolute; z-index:1; top:0; margin:0 -10px; padding:4px 0; line-height:28px; text-align:left; background:rgba(0,0,0,.33); border:1px solid rgba(0, 0, 0, .09); border-radius:6px; box-shadow:inset 0 1px 0 rgba(255,255,255,.09)}',
-	'#default_tabs > li > a:hover span[class!="tab_notice"] { visibility:hidden; }',
 	'#default_tabs > li:hover #tumblrlife-filter { display:block; }',
 	'#tumblrlife-filter li { list-style:none; font-size:16px; text-align:left; font-weight:bold; }',
 	'#tumblrlife-filter li a { display:block; padding:0 9px; color:#fff; text-decoration:none; text-transform:capitalize !important; }',
 
-	'html:lang(ja) #tumblrlife-filter li a { font-size:14px; }', // いる？
 	// フランス語などで頭文字が小文字のことがあるので表記を揃える
 	'#tumblrlife-filter li a:first-child { text-transform:none !important; }',
 	'#tumblrlife-filter li a.current, #tumblrlife-filter li a:hover { color:rgba(255,255,255,.75); }',
