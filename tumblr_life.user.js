@@ -153,7 +153,7 @@ var shortcuts = {
 	/* K */ 75: 'prevPosition',
 	/* J */ 74: 'nextPosition',
 	/* R */ 82: 'reblog',
-	// /* A */ 65: 'like',
+	/* A */ 65: 'like',
 	/* Q */ 81: 'reblogAddToQueue',
 	/* W */ 87: 'reblogPrivate',
 	/* E */ 69: 'reblogManually'
